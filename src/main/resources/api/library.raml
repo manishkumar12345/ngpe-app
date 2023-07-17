@@ -1,0 +1,28 @@
+#%RAML 1.0 Library
+usage:
+
+traits:
+  errorResponse: !include Traits/errorTraits.raml
+  client-id-required:
+    headers:
+      client_id:
+        type: string
+      client_secret:
+        type: string
+    responses:
+      401:
+        description: Unauthorized or invalid client application credentials
+      500:
+        description: Bad response from authorization server, or WSDL SOAP Fault error
+  
+
+types:
+  AddDoctorDataType: !include DataTypes/AddDoctor.raml
+  UpdateDoctorStatusDataType: !include DataTypes/UpdateDoctorStatus.raml
+  AddPatientDataType: !include DataTypes/AddPatient.raml
+  UpdatePatientDataType: !include DataTypes/UpdatePatient.raml
+  AddAppointmentDataType: !include DataTypes/AppointmentDataType.raml
+  UpdateAppointmentDataType: !include DataTypes/UpdateAppointmentDataType.raml
+  ApprovedAppoinmentDataType: !include DataTypes/ApprovedAppoinmentDataType.raml
+  CanceledAppoinmentDataType: !include DataTypes/CanceledAppoinmentDataType.raml
+

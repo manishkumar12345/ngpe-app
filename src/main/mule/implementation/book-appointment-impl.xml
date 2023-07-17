@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="post-add-appointment" doc:id="da2b97ad-3a3d-4612-997a-3a88b5f60f3a" />
+	<sub-flow name="put-update-appointment" doc:id="030d0333-bdd7-4fb5-a190-4e9f87ea8cec" />
+	<sub-flow name="cancel-appointment-by-users" doc:id="a34c6d55-350d-485b-84ef-d399d18be971" />
+</mule>

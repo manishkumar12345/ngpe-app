@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="post-add-doctor" doc:id="4f0b6f75-e0a4-453a-8dd6-5caef6e0bda3" >
+		<db:select doc:name="Select" doc:id="63ae5ea0-0e36-4f3a-8a50-74bdfaef800c" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from appointments]]></db:sql>
+		</db:select>
+		<json-logger:logger doc:name="Logger" doc:id="a58b2a6b-c0c0-4ca3-8899-2055ea400008" config-ref="JSON_Logger_Config" message="test"/>
+	</sub-flow>
+	<sub-flow name="get-doctor-appointments" doc:id="648d048c-67ab-4247-8bea-a93529d6def6" />
+	<sub-flow name="approve-doctor-by-admin" doc:id="1c857a9e-a60f-4ad8-90a3-d157090c179f" />
+	<sub-flow name="approve-appointment-by-doctor" doc:id="8506fb9c-0fcd-4c78-b257-1e53e21137ec" />
+</mule>

@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="ngpe-app-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="ngpe-app-config" api="ngpe-app.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="ngpe-app-main">
+        <http:listener config-ref="ngpe-app-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="ngpe-app-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="ngpe-app-console">
+        <http:listener config-ref="ngpe-app-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="ngpe-app-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\appointment:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-update-appointment" doc:id="d8b70d52-fd65-4b98-985b-7582f04a3299" message="start-update-appointment"/>
+		<flow-ref doc:name="put-update-appointment" doc:id="62876303-cfbc-4535-94d8-e196eb39519f" name="put-update-appointment"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Patient updated succussfully",
+  statusCode: "200"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-update-appointment" doc:id="4a420595-25b8-400c-944e-156ab1f5b344" message="end-update-appointment"/>
+    </flow>
+    <flow name="put:\patient:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-update-patient" doc:id="c85c8605-d5cb-4f64-ae60-749349a4dcc9" message="start-update-patient"/>
+		<flow-ref doc:name="put-update-patient" doc:id="da81d452-01ca-4062-a389-ac255acfab54" name="put-update-patient"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Patient updated succussfully",
+  statusCode: "200"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-update-patient" doc:id="3c5f431b-88a8-4170-901a-291d8e7f8e04" message="end-update-patient"/>
+    </flow>
+    <flow name="patch:\approvedAppointmentByDoctor:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-approve-appointment-by-doctor-api" doc:id="7d9d47e3-5855-499e-a28d-012ece731f13" message="start-approve-appointment-by-doctor-api"/>
+		<flow-ref doc:name="approve-appointment-by-doctor" doc:id="673482c6-9a13-4c0d-880f-7288805ad9de" name="approve-appointment-by-doctor"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Appointment updated succussfully",
+  statusCode: "200"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-approve-appointment-by-doctor-api" doc:id="92c40ad2-f588-4f6c-8ac9-07acbd8fa20d" message="end-approve-appointment-by-doctor-api"/>
+    </flow>
+    <flow name="patch:\cancelAppointment:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-cancel-appointment-by-user" doc:id="0ec69195-d1ff-417f-bca8-4c0b24051d79" message="start-cancel-appointment-by-user-api"/>
+		<flow-ref doc:name="cancel-appointment-by-users" doc:id="6a384538-f06c-41a9-9be5-e5259c657fa8" name="cancel-appointment-by-users"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Appointment updated succussfully",
+  statusCode: "200"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-cancel-appointment-by-user" doc:id="e53b018d-b2d2-40b2-8934-0a4deb92c071" message="end-cancel-appointment-by-user"/>
+    </flow>
+    <flow name="patch:\doctor:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-approve-doctor-by-admin" doc:id="fca70e7d-9284-4ca0-862b-796f94aee6a6" message="start-approve-doctor-by-admin-api"/>
+		<flow-ref doc:name="approve-doctor-by-admin" doc:id="3511c9d0-7de5-4a99-ba82-23eff0c4592a" name="approve-doctor-by-admin"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Doctor updated succussfully",
+  statusCode: "200"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-approve-doctor-by-admin" doc:id="aed254ce-150c-47ee-adf4-cf8843b0b35a" message="end-approve-doctor-by-admin-api"/>
+    </flow>
+    <flow name="get:\getDoctorAppointment\(doctor_id):ngpe-app-config">
+        <logger level="INFO" doc:name="start-get-doctor-appointment" doc:id="f8bc73bc-f6ed-4209-8ab5-97b8906ac5da" message="start-get-doctor-appointment-api"/>
+		<flow-ref doc:name="get-doctor-appointments" doc:id="10d9afd7-8bb3-4245-886a-d06d6f289c05" name="get-doctor-appointments"/>
+		<ee:transform>
+            <ee:variables>
+                <ee:set-variable variableName="doctor_id">attributes.uriParams.'doctor_id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[
+  {
+    patient_id: 10,
+    doctor_id: 20,
+    hospital_id: 12,
+    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
+    patient_name: "Komal Singh",
+    doctor_name: "Sukhi Singh",
+    specialization: "Neurosciences",
+    preferred_time: "10:30 AM",
+    appointment_status: "approved",
+    created_at: "2023-07-06T21:00:00"
+  }, 
+  {
+    patient_id: 10,
+    doctor_id: 21,
+    hospital_id: 12,
+    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
+    patient_name: "Komal Singh",
+    doctor_name: "Sukhi Singh",
+    specialization: "Neurosciences",
+    preferred_time: "11:30 AM",
+    appointment_status: "not approved",
+    created_at: "2023-07-06T21:00:00"
+  }
+]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-get-doctor-appointment" doc:id="ec712ce3-108e-418b-b03c-db1416c21011" message="end-get-doctor-appointment-api"/>
+    </flow>
+    <flow name="get:\getPatientAppointment\(patient_id):ngpe-app-config">
+        <logger level="INFO" doc:name="start-get-patient-appointments" doc:id="34e3e422-32d5-43e6-9180-837cad93bece" message="start-get-patient-appointments-api"/>
+		<flow-ref doc:name="get-patient-appointments" doc:id="b33002af-0a24-461d-8927-4bbf072a8b64" name="get-patient-appointments"/>
+		<ee:transform>
+            <ee:variables>
+                <ee:set-variable variableName="patient_id">attributes.uriParams.'patient_id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[
+  {
+    patient_id: 10,
+    doctor_id: 20,
+    hospital_id: 12,
+    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
+    patient_name: "Komal Singh",
+    doctor_name: "Sukhi Singh",
+    specialization: "Neurosciences",
+    start_time: "10:30 AM",
+    end_time: "11:00 AM",
+    appointment_status: "approved",
+    created_at: "2023-07-06T21:00:00"
+  }, 
+  {
+    patient_id: 10,
+    doctor_id: 21,
+    hospital_id: 12,
+    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
+    patient_name: "Komal Singh",
+    doctor_name: "Sukhi Singh",
+    specialization: "Neurosciences",
+    start_time: "11:00 AM",
+    end_time: "11:30 AM",
+    appointment_status: "not approved",
+    created_at: "2023-07-06T21:00:00"
+  }
+]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-get-patient-appointments" doc:id="e5ef2348-4da5-4270-b86f-c90978694be9" message="end-get-patient-appointments-api"/>
+    </flow>
+    <flow name="post:\appointment:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="start-add-appointment" doc:id="5a765e40-7480-4c04-814c-b9f71652aec4" message="start-add-appointment-api"/>
+		<flow-ref doc:name="post-add-appointment" doc:id="a84ebc8f-b899-4b80-b53b-0450472ef7f6" name="post-add-appointment"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Appointment created succussfully",
+  statusCode: "201"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-add-appointment" doc:id="2dc53054-deb0-4a19-9510-1072009e79fd" message="start-add-appointment-api"/>
+    </flow>
+    <flow name="post:\doctor:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="add-doctor" doc:id="69af0a05-cac0-4ac2-812b-09abf6b747de" message="add-doctor-api"/>
+		<flow-ref doc:name="post-add-doctor" doc:id="9718f3b9-51d2-4c2f-b5ff-28ec929ebd2b" name="post-add-doctor"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Doctor created succussfully",
+  statusCode: "201"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-doctor" doc:id="796fd893-206e-481f-8926-07beaf3640d7" message="end-doctor-api"/>
+    </flow>
+    <flow name="post:\patient:application\json:ngpe-app-config">
+        <logger level="INFO" doc:name="add-patient" doc:id="e3811dae-b008-4d39-a6b8-4c46f465d83b" message="add-patient-api"/>
+		<flow-ref doc:name="post-add-patient" doc:id="9a596a54-8f9f-4c34-914c-38fbb6674ca3" name="post-add-patient"/>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Patient created succussfully",
+  statusCode: "201"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="end-patient" doc:id="8ba19f66-f74a-4293-8af8-bc9d43779f92" message="end-patient-api"/>
+    </flow>
+</mule>

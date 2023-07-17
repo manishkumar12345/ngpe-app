@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="post-add-patient" doc:id="c079c5db-2e03-4f5b-8269-2431f47024de" />
+	<sub-flow name="get-patient-appointments" doc:id="b6848412-d310-4a3f-9f3b-193084ddfe4e" />
+	<sub-flow name="put-update-patient" doc:id="f6cca712-062f-4858-a7bb-aee7ad82d2dc" />
+</mule>
