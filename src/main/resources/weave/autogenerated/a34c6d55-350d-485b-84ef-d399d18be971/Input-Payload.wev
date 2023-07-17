@@ -1,0 +1,10 @@
+%dw 2.0
+
+type auto_a34c6d55_350d_485b_84ef_d399d18be971_Input_Payload = {
+  appointment_status: "canceled" | "approved" | "not approved", 
+  updated_at: String, 
+  user_id: Number, 
+  appointment_status_notes?: String, 
+  _?: Any
+}
+

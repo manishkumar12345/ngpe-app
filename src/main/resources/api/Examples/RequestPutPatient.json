@@ -1,0 +1,14 @@
+{
+  "patient_id" : 1,
+  "first_name" : "Rahul",
+  "last_name" : "Singh",
+  "email" : "rahul123@gmail.com",
+  "phone_number" : "7851862101",
+  "age" : 20,
+  "gender": "male",
+  "address": "Chandigarh",
+  "guardian_name": "XYZ",
+  "guardian_phone_number": "9851862301",
+  "status": "active",
+  "updated_at" : "2023-07-06T21:00:00"
+}

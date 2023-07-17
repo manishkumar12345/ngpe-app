@@ -1,0 +1,41 @@
+#%RAML 1.0 DataType
+
+type: object
+
+properties:
+  appointment_id:
+    type: integer
+  user_id?:
+    description: Pataient ID
+    type: integer
+  doctor_id?:
+    description: Doctor ID
+    type: integer
+  hospital_id?:
+    description: Hospital ID
+    type: integer
+  specialization_id?:
+    description: Specialization Name
+    type: integer
+  date?:
+    type: date-only
+  start_time?:
+    description: Preferred Start Time
+    type: string
+  end_time?:
+    description: Preferred End Time
+    type: string
+  symptoms:
+    description: Update symptoms description.
+    type: string
+  appointment_status?:
+    enum: ["not approved", "approved", "cancel"]
+  updated_by:
+    type: integer
+  updated_at:
+    type: datetime-only 
+
+
+
+     
+    

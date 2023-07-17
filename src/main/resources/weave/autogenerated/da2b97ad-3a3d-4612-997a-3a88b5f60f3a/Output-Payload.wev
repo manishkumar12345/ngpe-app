@@ -1,0 +1,17 @@
+%dw 2.0
+
+type auto_da2b97ad_3a3d_4612_997a_3a88b5f60f3a_Output_Payload = {
+  date: String, 
+  symptoms: String, 
+  doctor_id: Number, 
+  start_time: String, 
+  specialization_id: Number, 
+  appointment_status: "cancel" | "approved" | "not approved", 
+  user_id: Number, 
+  added_by: Number, 
+  end_time?: String, 
+  created_at: String, 
+  hospital_id: Number, 
+  _?: Any
+}
+

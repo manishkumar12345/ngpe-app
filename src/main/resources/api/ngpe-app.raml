@@ -1,0 +1,145 @@
+#%RAML 1.0
+title: Next Generation Patient Examination NGPE APP
+
+protocols: [HTTP, HTTPS]
+
+uses:
+  lib: library.raml
+
+
+/doctor:
+  post:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Add new Doctor Details
+    body:
+      application/json:
+        type: lib.AddDoctorDataType
+        example: !include Examples/RequestPostDoctor.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/DoctorResponse/201.json
+
+  patch:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Update doctor status by Admin
+    body:
+      application/json:
+        type: lib.UpdateDoctorStatusDataType
+        example: !include Examples/RequestPatchDoctorStatus.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/DoctorResponse/200.json
+  
+
+/patient:
+  post:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Add new Patient Details
+    body:
+      application/json:
+        type: lib.AddPatientDataType
+        example: !include Examples/RequestPostPatient.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/PataientResponse/201.json
+
+  put:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Update Patient Details
+    body:
+      application/json:
+        type: lib.UpdatePatientDataType
+        example: !include Examples/RequestPutPatient.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/PataientResponse/200.json
+/appointment:
+  post:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Book Appointment
+    body:
+      application/json:
+        type: lib.AddAppointmentDataType
+        example: !include Examples/RequestPostAppointment.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/AppointmentResponse/201.json
+  put:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Update Appointment Details
+    body:
+      application/json:
+        type: lib.UpdateAppointmentDataType
+        example: !include Examples/RequestPutAppointment.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/PataientResponse/200.json
+
+/approvedAppointmentByDoctor:
+  patch:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Approved Appointment By Doctor
+    body:
+      application/json:
+        type: lib.ApprovedAppoinmentDataType
+        example: !include Examples/RequestPatchApprovedAppointment.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/AppointmentResponse/200.json
+
+/cancelAppointment:
+  patch:
+    is: [lib.errorResponse, lib.client-id-required]     
+    description: Cancel Appointment By Doctor or Patient
+    body:
+      application/json:
+        type: lib.CanceledAppoinmentDataType
+        example: !include Examples/RequestPatchCanceledAppointment.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include Examples/SuccessResponse/AppointmentResponse/200.json
+
+
+/getPatientAppointment/{patient_id}:
+  get:
+    is: [lib.errorResponse, lib.client-id-required]
+    description: Get Patient appointment by ID
+    responses:
+      200: 
+        body:
+          application/json:
+            example: !include Examples/GetPatientAppointment.json
+
+/getDoctorAppointment/{doctor_id}:
+  get:
+    is: [lib.errorResponse, lib.client-id-required]
+    description: Get Doctor appointment by ID
+    responses:
+      200: 
+        body:
+          application/json:
+            example: !include Examples/GetDoctorAppointment.json
+
+
+
+  
+
+
+
+

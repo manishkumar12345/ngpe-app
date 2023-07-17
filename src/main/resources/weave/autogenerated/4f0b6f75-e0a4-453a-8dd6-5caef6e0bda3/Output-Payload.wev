@@ -1,0 +1,22 @@
+%dw 2.0
+
+type auto_4f0b6f75_e0a4_453a_8dd6_5caef6e0bda3_Output_Payload = {
+  gender: "other" | "female" | "male", 
+  date_of_birth: String, 
+  last_name: String, 
+  created_at: String, 
+  hospital_id: Number, 
+  experience: String, 
+  identity_card: "voter_card" | "aadhar_card" | "pan_card", 
+  qualification: String, 
+  specialization_id: Number, 
+  phone_number: String, 
+  first_name: String, 
+  email: String, 
+  age: Number, 
+  identity_card_number: String, 
+  qualification_document: String, 
+  status: "inactive" | "active", 
+  _?: Any
+}
+

@@ -1,0 +1,15 @@
+#%RAML 1.0 DataType
+
+type: object
+    
+properties:
+  doctor_id:
+    type: integer
+  status:
+    enum: ["inactive","active"]
+  status_notes:
+    type: string
+    minLength: 20
+    maxLength: 1000
+  updated_at :
+    type: datetime-only

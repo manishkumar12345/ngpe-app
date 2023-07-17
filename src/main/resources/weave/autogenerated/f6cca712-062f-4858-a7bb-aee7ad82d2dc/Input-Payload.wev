@@ -1,0 +1,17 @@
+%dw 2.0
+
+type auto_f6cca712_062f_4858_a7bb_aee7ad82d2dc_Input_Payload = {
+  address?: String, 
+  guardian_name?: String, 
+  gender?: "other" | "female" | "male", 
+  updated_at: String, 
+  patient_id: Number, 
+  last_name?: String, 
+  phone_number?: String, 
+  first_name?: String, 
+  guardian_phone_number?: String, 
+  email?: String, 
+  age?: Number, 
+  _?: Any
+}
+

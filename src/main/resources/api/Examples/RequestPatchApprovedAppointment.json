@@ -1,0 +1,6 @@
+{
+  "user_id": 10,
+  "appointment_status": "approved",
+  "appointment_status_notes": "Doctor can add some text. But this is optional.",
+  "updated_at": "2023-07-06T21:00:00"
+}

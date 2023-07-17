@@ -1,0 +1,59 @@
+#%RAML 1.0 DataType
+
+type: object
+    
+properties:
+  first_name:
+    description: Doctor first name.
+    type: string
+    minLength: 3
+    maxLength: 25
+  last_name:
+    description: Doctor last name.
+    type: string
+    minLength: 3
+    maxLength: 25
+  email: 
+    description: Doctor email.
+    type: string
+    pattern: ^.+@.+\..+$
+    minLength: 5
+    maxLength: 50
+  phone_number:
+    description: Doctor phone number.
+    type: string  
+    minLength: 10
+    maxLength: 12   
+  date_of_birth: 
+    type: date-only
+  age: 
+    type: integer
+    minimum: 25
+    maximum: 70
+  gender:
+   enum: ["male", "female", "other"]
+  identity_card:
+    enum: ["aadhar_card","pan_card","voter_card"] 
+  identity_card_number: 
+   type: string
+   minLength: 10
+   maxLength: 12
+  specialization_id:
+    description: Add doctor specialization.
+    type: integer
+  hospital_id:
+    description: Add hospital name.
+    type: integer
+  qualification:
+    description: Add qualification.
+    type: string
+  experience:
+    description: Add doctor experience.
+    type: string
+  qualification_document:
+    description: Add qualification document.
+    type: string
+  status:
+    enum: ["inactive","active"]
+  created_at :
+    type: datetime-only
