@@ -3,7 +3,13 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<sub-flow name="post-add-patient" doc:id="c079c5db-2e03-4f5b-8269-2431f47024de" />
-	<sub-flow name="get-patient-appointments" doc:id="b6848412-d310-4a3f-9f3b-193084ddfe4e" />
-	<sub-flow name="put-update-patient" doc:id="f6cca712-062f-4858-a7bb-aee7ad82d2dc" />
+	<sub-flow name="post-add-patient" doc:id="c079c5db-2e03-4f5b-8269-2431f47024de" >
+		<logger level="INFO" doc:name="Logger" doc:id="65d39d36-e743-4c99-af57-caf67ebc4f1d" message="test"/>
+	</sub-flow>
+	<sub-flow name="get-patient-appointments" doc:id="b6848412-d310-4a3f-9f3b-193084ddfe4e" >
+		<logger level="INFO" doc:name="Logger" doc:id="ee96c129-4b62-4d93-8bc6-fe24a76088b1" message="test"/>
+	</sub-flow>
+	<sub-flow name="put-update-patient" doc:id="f6cca712-062f-4858-a7bb-aee7ad82d2dc" >
+		<logger level="INFO" doc:name="Logger" doc:id="7a82e758-eab1-4e48-a597-3a491cadc310" message="test"/>
+	</sub-flow>
 </mule>
