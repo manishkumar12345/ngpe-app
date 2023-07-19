@@ -138,17 +138,6 @@ output application/json
     <flow name="put:\patient:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-update-patient" doc:id="c85c8605-d5cb-4f64-ae60-749349a4dcc9" message="start-update-patient"/>
 		<flow-ref doc:name="put-update-patient" doc:id="da81d452-01ca-4062-a389-ac255acfab54" name="put-update-patient"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Patient updated succussfully",
-  statusCode: "200"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-update-patient" doc:id="3c5f431b-88a8-4170-901a-291d8e7f8e04" message="end-update-patient"/>
     </flow>
     <flow name="patch:\approvedAppointmentByDoctor:application\json:ngpe-app-config">
@@ -245,46 +234,6 @@ output application/json
     <flow name="get:\getPatientAppointment\(patient_id):ngpe-app-config">
         <logger level="INFO" doc:name="start-get-patient-appointments" doc:id="34e3e422-32d5-43e6-9180-837cad93bece" message="start-get-patient-appointments-api"/>
 		<flow-ref doc:name="get-patient-appointments" doc:id="b33002af-0a24-461d-8927-4bbf072a8b64" name="get-patient-appointments"/>
-		<ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="patient_id">attributes.uriParams.'patient_id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    patient_id: 10,
-    doctor_id: 20,
-    hospital_id: 12,
-    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
-    patient_name: "Komal Singh",
-    doctor_name: "Sukhi Singh",
-    specialization: "Neurosciences",
-    start_time: "10:30 AM",
-    end_time: "11:00 AM",
-    appointment_status: "approved",
-    created_at: "2023-07-06T21:00:00"
-  }, 
-  {
-    patient_id: 10,
-    doctor_id: 21,
-    hospital_id: 12,
-    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
-    patient_name: "Komal Singh",
-    doctor_name: "Sukhi Singh",
-    specialization: "Neurosciences",
-    start_time: "11:00 AM",
-    end_time: "11:30 AM",
-    appointment_status: "not approved",
-    created_at: "2023-07-06T21:00:00"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-get-patient-appointments" doc:id="e5ef2348-4da5-4270-b86f-c90978694be9" message="end-get-patient-appointments-api"/>
     </flow>
     <flow name="post:\appointment:application\json:ngpe-app-config">
@@ -322,17 +271,6 @@ output application/json
     <flow name="post:\patient:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="add-patient" doc:id="e3811dae-b008-4d39-a6b8-4c46f465d83b" message="add-patient-api"/>
 		<flow-ref doc:name="post-add-patient" doc:id="9a596a54-8f9f-4c34-914c-38fbb6674ca3" name="post-add-patient"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Patient created succussfully",
-  statusCode: "201"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-patient" doc:id="8ba19f66-f74a-4293-8af8-bc9d43779f92" message="end-patient-api"/>
     </flow>
 </mule>

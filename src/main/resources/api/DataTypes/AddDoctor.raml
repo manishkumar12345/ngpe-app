@@ -44,6 +44,12 @@ properties:
   hospital_id:
     description: Add hospital name.
     type: integer
+  day_start_time:
+    description: Doctor day start time 
+    type: time-only
+  day_end_time:
+    description: Dcotor day end time
+    type: time-only
   qualification:
     description: Add qualification.
     type: string
@@ -55,5 +61,3 @@ properties:
     type: string
   status:
     enum: ["inactive","active"]
-  created_at :
-    type: datetime-only

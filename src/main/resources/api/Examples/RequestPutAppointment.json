@@ -5,10 +5,9 @@
   "hospital_id": 12,
   "specialization_id": 1,
   "date": "2023-07-06",
-  "start_time": "10:30 AM",
-  "end_time": "11:00 AM",
+  "start_time": "21:00:00",
+  "end_time": "21:00:00",
   "symptoms": "Fever",
   "appointment_status": "not approved",
-  "updated_by": 1,
-  "updated_at": "2023-07-06T21:00:00"
+  "updated_by": 1
 }
