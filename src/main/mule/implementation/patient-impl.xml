@@ -1,15 +1,188 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<sub-flow name="post-add-patient" doc:id="c079c5db-2e03-4f5b-8269-2431f47024de" >
-		<logger level="INFO" doc:name="Logger" doc:id="65d39d36-e743-4c99-af57-caf67ebc4f1d" message="test"/>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="post-add-patient" doc:id="c079c5db-2e03-4f5b-8269-2431f47024de">
+		<db:query-single doc:name="Fetching User Based On Email" doc:id="574c531e-2c48-4044-a3be-0382f94a1b4a" config-ref="Database_Config" target="getUserData">
+			<db:sql ><![CDATA[SELECT * FROM users WHERE email = :email]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"email": payload.email
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Checking If User Is Registered On Not" doc:id="e5bb9c42-bb20-4fe5-8f14-3ae0725e2410" >
+			<when expression="#[sizeOf(vars.getUserData)&gt;0]">
+				<ee:transform doc:name="This patient is already created" doc:id="2c76394b-bc86-41ac-9a54-28c8298f4af7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[output application/json
+---
+{
+  message: "This patient is already created",
+  statusCode: "200"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<db:insert doc:name="Add Patient " doc:id="fcf9d777-9701-4c58-9503-7cf46fb1970d" config-ref="Database_Config">
+			<db:sql><![CDATA[
+INSERT INTO users (first_name, last_name,user_type, email, phone_number, date_of_birth, age, gender, identity_card, address,guardian_name,guardian_phone_number,status,created_at,updated_at)
+VALUES (:first_name, :last_name, :user_type, :email, :phone_number, :date_of_birth, :age, :gender, :identity_card, :address, :guardian_name, :guardian_phone_number, :status, :created_at, :updated_at)]]></db:sql>
+			<db:parameter-types >
+						<db:parameter-type key="gender" type="OTHER" />
+						<db:parameter-type key="status" type="OTHER" />
+						<db:parameter-type key="identity_card" type="OTHER" />
+					</db:parameter-types>
+					<db:input-parameters><![CDATA[#[{
+	"first_name": payload.first_name,
+	"last_name": payload.last_name,
+	"user_type": payload.user_type,
+	"email": payload.email,
+	"phone_number": payload.phone_number,
+	"date_of_birth": payload.date_of_birth,
+	"age": payload.age,
+	"gender": payload.gender,
+	"identity_card" : payload.identity_card,
+	"address": payload.address,
+	"guardian_name": payload.guardian_name,
+	"guardian_phone_number": payload.guardian_phone_number,
+	"status": payload.status,
+	"created_at": now() as String {
+		format: "y-MM-dd"
+	},
+	"updated_at": now() as String {
+		format: "y-MM-dd"
+	}
+}]]]></db:input-parameters>
+		</db:insert>
+				<ee:transform doc:name="Patient created succussfully" doc:id="15dcbd0f-1c00-4dce-b7ff-c991209ae4e1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  message: "Patient created succussfully",
+  statusCode: "201"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="get-patient-appointments" doc:id="b6848412-d310-4a3f-9f3b-193084ddfe4e" >
-		<logger level="INFO" doc:name="Logger" doc:id="ee96c129-4b62-4d93-8bc6-fe24a76088b1" message="test"/>
+		<set-variable value="#[attributes.uriParams.'patient_id']" doc:name="Patient Id" doc:id="3bf9f941-145b-4e99-a8a0-3ad2de95bfb9" variableName="patient_id"/>
+		<db:query-single doc:name="Fetching Appointments Records" doc:id="e125a08a-bad1-4549-9dbd-66c74bc47316" config-ref="Database_Config" target="appointments_data">
+			<db:sql ><![CDATA[SELECT * FROM appointments WHERE user_id= :patient_id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"patient_id": vars.patient_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Checking If There is Appointments Added Or Not" doc:id="c8e7a70c-d682-45a0-bddf-ed55b24f5549" >
+			<when expression="#[sizeOf(vars.appointments_data)==0]">
+				<ee:transform doc:name="There is no appointment records" doc:id="148ceadd-6128-4689-96df-76d1c5ebc117" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[output application/json
+---
+{
+  message: "There is no appointment records",
+  statusCode: "200"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="List of Appointments Records" doc:id="c8210da7-1baa-4d77-9308-37759f3a512c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.appointments_data]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="put-update-patient" doc:id="f6cca712-062f-4858-a7bb-aee7ad82d2dc" >
-		<logger level="INFO" doc:name="Logger" doc:id="7a82e758-eab1-4e48-a597-3a491cadc310" message="test"/>
+		<set-variable value="#[payload.patient_id]" doc:name="Patient Id" doc:id="d8d38888-88bb-44f9-85e0-6345a8af7770" variableName="patient_id"/>
+		<db:query-single doc:name="Patient Becord By ID" doc:id="6ce48975-e51f-4548-b9eb-1f2822d4262f" config-ref="Database_Config" target="getUserData">
+			<db:sql ><![CDATA[SELECT * FROM users WHERE id= :patient_id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	patient_id: vars.patient_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Checking If Patient Is Registered On Not" doc:id="3928a051-8524-4a28-afe4-f45cca15f689" >
+			<when expression="#[sizeOf(vars.getUserData)!=0]">
+				<ee:transform doc:name="Var patientPatchData" doc:id="206b481a-6bb5-40b6-9058-333d777a559d">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="patientPatchData"><![CDATA[%dw 2.0
+output application/json skipNullOn = "everywhere"
+---
+{
+	"first_name": payload.first_name,
+	"last_name": payload.last_name,
+	"user_type": payload.user_type,
+	"email": payload.email,
+	"phone_number": payload.phone_number,
+	"date_of_birth": payload.date_of_birth,
+	"age": payload.age,
+	"gender": payload.gender,
+	"identity_card": payload.identity_card,
+	"address": payload.address,
+	"guardian_name": payload.guardian_name,
+	"guardian_phone_number": payload.guardian_phone_number,
+	"status": payload.status
+}
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<ee:transform doc:name="Update Query" doc:id="da73b2dd-aabb-46d5-af56-7a1197b59c79">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="updatePatientData"><![CDATA[%dw 2.0
+output application/json
+---
+"UPDATE users SET " ++ (vars.patientPatchData mapObject {
+	"Query": $$ ++ " = '" ++ $ ++ "'"
+} pluck $ joinBy ",") ++ ", updated_at= '" ++ now() as String {
+	format: "yyyy-MM-dd HH:m:s"
+} ++ "' WHERE id= " ++ vars.patient_id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<db:update doc:name="Updating Patient Records" doc:id="e8afccf3-471f-40e4-9a92-35ac75029212" config-ref="Database_Config">
+			<db:sql><![CDATA[#[vars.updatePatientData]]]></db:sql>
+		</db:update>
+				<ee:transform doc:name="Patient updated successfully" doc:id="7d931976-1f26-49f1-b02c-0939f88e3b64">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "message": "Patient updated successfully",
+  "statusCode": "200"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Patient not found" doc:id="044c52ca-f8a8-41b4-bd8f-7c316f8278ad">
+					<ee:message>
+						<ee:set-payload><![CDATA[output application/json
+---
+{
+  message: "Patient not found",
+  statusCode: "200"
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[200]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>
