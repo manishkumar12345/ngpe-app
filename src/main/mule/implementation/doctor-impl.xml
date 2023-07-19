@@ -1,22 +1,179 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="post-add-doctor" doc:id="4f0b6f75-e0a4-453a-8dd6-5caef6e0bda3" >
-		<logger level="INFO" doc:name="end-sub-flow" doc:id="2b64170a-ee8b-46ca-9c79-40c3143df672" message="start-sub-flow"/>
-		<db:select doc:name="Select" doc:id="63ae5ea0-0e36-4f3a-8a50-74bdfaef800c" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from appointments]]></db:sql>
-		</db:select>
-		<logger level="INFO" doc:name="end-sub-flow" doc:id="2eaee5c9-fb86-4caf-9a78-773cbe1f89b3" message="end-sub-flow"/>
+		<logger level="INFO" doc:name="enter-post-add-doctor" doc:id="2b64170a-ee8b-46ca-9c79-40c3143df672" message="enter-post-add-doctor"/>
+		<set-variable value="#[payload.email]" doc:name="Set Email Id" doc:id="71966e2a-cd6b-40f0-ba99-e27faee3536d" variableName="emailId"/>
+		<db:query-single doc:name="Query single" doc:id="13dfa0fb-b1b2-4bd8-96ce-cb79b86a9f46" config-ref="Database_Config" target="getEmailData">
+			<db:sql ><![CDATA[SELECT email FROM users WHERE email = :doctor_email]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"doctor_email"  : vars.emailId
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="808afcd1-fb6e-4467-a992-bbe008dd9746" >
+			<when expression="#[isEmpty(vars.getEmailData)]">
+				<logger level="INFO" doc:name="insert-doctor-data-to-table" doc:id="72a19394-e457-4bf0-8238-9e0c99e8df09" message="insert-doctor-data-to-table"/>
+				<db:insert doc:name="Insert-doctor-data" doc:id="9f07d478-e63c-49b6-8118-4a34c5fdc8d8" config-ref="Database_Config" target="insertDoctorData" autoGenerateKeys="true">
+					<db:sql ><![CDATA[INSERT INTO users(
+	user_type, first_name, last_name, email, phone_number, date_of_birth, age, gender, identity_card, identity_card_number, status, created_at)
+	VALUES (:doctor_type, :first_name, :last_name, :email, :phone_number, :date_of_birth, :age, :gender, :identity_card, :identity_card_number, :status, :created_at);]]></db:sql>
+					<db:parameter-types >
+						<db:parameter-type key="gender" type="OTHER" />
+						<db:parameter-type key="identity_card" type="OTHER" />
+						<db:parameter-type key="status" type="OTHER" />
+					</db:parameter-types>
+					<db:input-parameters ><![CDATA[#[{
+    doctor_type : "doctor",
+	first_name : payload.first_name,
+	last_name : payload.last_name,
+	email : payload.email,
+	phone_number : payload.phone_number,
+	date_of_birth : payload.date_of_birth as Date {format: "yyyy-MM-dd"},
+	age : payload.age,
+	gender : payload.gender,
+	identity_card : payload.identity_card,
+	identity_card_number : payload.identity_card_number,
+	status : payload.status,
+	created_at : now() as Date {format: "yyyy-MM-dd"}
+}]]]></db:input-parameters>
+				</db:insert>
+				<ee:transform doc:name="set-doctor_id" doc:id="ef75d85a-7111-4994-9a93-2c4626e4aa6d" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="doctor_id" ><![CDATA[vars.insertDoctorData.generatedKeys.id]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<choice doc:name="Choice" doc:id="ada148cc-d919-4a50-9511-36495ba0b106" >
+					<when expression="#[!isEmpty(vars.doctor_id)]">
+						<logger level="INFO" doc:name="enter-data-in-doctor-meta" doc:id="1c84acc2-d84f-4495-a496-e2b1f2058c6b" message="enter-data-in-doctor-meta"/>
+						<logger level="INFO" doc:name="Logger" doc:id="dcb8f370-0e30-4b7e-8bb7-ac83b599e503" message="print doctor id #[vars.doctor_id]"/>
+						<db:insert doc:name="insert-data-into-doctor_meta" doc:id="65556bef-2956-41aa-8c29-c55f1bba67da" config-ref="Database_Config">
+							<db:sql ><![CDATA[INSERT INTO doctor_meta(
+user_id, specialization_id, hospital_id, day_start_time, day_end_time, experience, qualification, qualification_document, status_note)
+	VALUES ( :user_id, :specialization_id, :hospital_id, :day_start_time, :day_end_time, :experience, :qualification, :qualification_document,:status_note);]]></db:sql>
+							<db:input-parameters ><![CDATA[#[{
+    user_id : vars.doctor_id,
+	specialization_id : payload.specialization_id,
+	hospital_id : payload.hospital_id,
+	day_start_time : payload.day_start_time,
+	day_end_time : payload.day_end_time,
+	experience : payload.experience,
+	qualification : payload.qualification,
+	qualification_document : payload.qualification_document,
+	status_note: null
+}]]]></db:input-parameters>
+						</db:insert>
+						<ee:transform doc:name="success-message" doc:id="e6019902-0491-4301-8c83-ee5910527b31" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 201,
+	'message': 'The Doctor ID ' ++ vars.doctor_id as String ++ ' has been successfully created.'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="49d40b04-dd6f-4851-bbd7-a3f9cb0b23e7" message="doctor-id not found"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="5365f540-f2c0-4d2e-9666-35c93f629c8f" />
+				<ee:transform doc:name="Email-already-exist" doc:id="71af6e47-42f2-463d-b151-a355bfcabab0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": false,
+	"message" :  "Doctor email " ++ vars.emailId as String ++ " already exist." 
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[200]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="enter-sub-flow-post-add-doctor-end" doc:id="2eaee5c9-fb86-4caf-9a78-773cbe1f89b3" message="enter-sub-flow-post-add-doctor-end"/>
 	</sub-flow>
 	<sub-flow name="get-doctor-appointments" doc:id="648d048c-67ab-4247-8bea-a93529d6def6" >
 		<logger level="INFO" doc:name="Logger" doc:id="e89188c4-59e4-4fa8-a1a9-b201bb5d3655" message="doctor"/>
 	</sub-flow>
 	<sub-flow name="approve-doctor-by-admin" doc:id="1c857a9e-a60f-4ad8-90a3-d157090c179f" >
-		<logger level="INFO" doc:name="Logger" doc:id="c0e5cc5b-a91b-4c20-8606-d1c425024b65" message="test"/>
+		<logger level="INFO" doc:name="enter-approve-doctor-by-admin" doc:id="c0e5cc5b-a91b-4c20-8606-d1c425024b65" message="enter-approve-doctor-by-admin"/>
+		<set-variable value="#[payload.doctor_id]" doc:name="Set doctor_id" doc:id="27ce4064-7fcb-415d-bcc4-fd224e749c42" variableName="doctor_id"/>
+		<db:query-single doc:name="check_doctor_exist_or_not" doc:id="a6f1b2e4-4f56-4f20-9e6a-60e278a324f2" config-ref="Database_Config" target="getDoctorById">
+			<db:sql ><![CDATA[SELECT id FROM users WHERE id = :doctor_id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"doctor_id"  : vars.doctor_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="e7fb4f13-fcd4-486a-9762-2b26115312bb" >
+			<when expression="#[!isEmpty(vars.getDoctorById)]">
+				<db:update doc:name="update-doctor-status" doc:id="43c1db13-346c-4953-8f2f-2b79825a7599" config-ref="Database_Config" target="updateDoctorStatus">
+					<db:sql ><![CDATA[UPDATE users
+SET status = :status, updated_at= :updated_at
+WHERE id = :doctor_id;]]></db:sql>
+					<db:parameter-types >
+						<db:parameter-type key="status" type="OTHER" />
+					</db:parameter-types>
+					<db:input-parameters ><![CDATA[#[{
+	doctor_id: vars.doctor_id,
+	status : payload.status,
+	updated_at: now() as Date { format : "yyyy-MM-dd"}
+}]]]></db:input-parameters>
+				</db:update>
+				<choice doc:name="Choice" doc:id="0e0d45b2-5e0f-432c-bdbd-d534c92ede22" >
+					<when expression="#[!isEmpty(payload.status_notes)]">
+						<logger level="INFO" doc:name="update-doctor-status-note" doc:id="374193e9-845a-4826-b62e-740140227377" message="update-doctor-status-note"/>
+						<db:update doc:name="update-doctor-status-note" doc:id="cff3831b-bac8-4bf5-81cb-07298b65abc1" config-ref="Database_Config" >
+							<db:sql ><![CDATA[UPDATE doctor_meta
+SET status_note = :status_note
+WHERE user_id = :doctor_id;]]></db:sql>
+							<db:input-parameters ><![CDATA[#[{
+	doctor_id : vars.doctor_id,
+	status_note : payload.status_notes default null
+}]]]></db:input-parameters>
+						</db:update>
+						<ee:transform doc:name="success-message" doc:id="e31abde7-20e9-4dbd-a37c-45a5111cf6bc" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[{
+    "success": true,
+    "statusCode": 200,
+    "message": "The Doctor ID " ++ vars.doctor_id as String ++ " status has been updated sucessfully."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="doctor-status-note-is-empty" doc:id="1805bf2e-0de9-4514-852d-a4bcee31f9e4" message="doctor-status-note-is-empty"/>
+						<ee:transform doc:name="success-message" doc:id="78f8f2cb-0d70-469c-9853-fb033aba32eb" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[{
+    "success": true,
+    "statusCode": 200,
+    "message": "The Doctor ID " ++ vars.doctor_id as String ++ " status has been updated sucessfully."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="doctor-id-does-not-exist" doc:id="dbd7ddda-f291-42d8-95d6-91c6a370f3b7" message="doctor-id-does-not-exist"/>
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="approve-appointment-by-doctor" doc:id="8506fb9c-0fcd-4c78-b257-1e53e21137ec" >
 		<logger level="INFO" doc:name="Logger" doc:id="630783b6-85be-4944-83e4-d47b80a0f3b9" message="approve"/>

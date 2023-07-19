@@ -1358,4 +1358,6 @@ type: string]]></types:shape>
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#ef75d85a-7111-4994-9a93-2c4626e4aa6d"/>
+  <types:enrichment select="#c8bdbc8c-f6e6-461b-8034-c1b7d8a380d2"/>
 </types:mule>

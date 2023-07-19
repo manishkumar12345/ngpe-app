@@ -10,9 +10,10 @@
   "identity_card_number": "342847297492",
   "specialization_id": 1,
   "hospital_id": 1,
+  "day_start_time": "04:30:00",
+  "day_end_time": "12:30:00",
   "qualification": "M.B.B.S",
   "experience": "10 Years",
   "qualification_document": "M.B.B.S Degree",
-  "status": "inactive",
-  "created_at" : "2023-07-06T21:00:00"
+  "status": "inactive"
 }

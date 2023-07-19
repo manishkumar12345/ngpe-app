@@ -19,19 +19,15 @@ properties:
     type: integer
   start_time:
     description: Preferred Start Time
-    type: string
+    type: time-only
   end_time?:
     description: Preferred End Time
-    type: string
+    type: time-only
   symptoms:
     description: Add symptoms description.
     type: string
-  appointment_status:
-    enum: ["not approved", "approved", "cancel"]
   added_by:
     type: integer
-  created_at :
-    type: datetime-only 
 
 
      

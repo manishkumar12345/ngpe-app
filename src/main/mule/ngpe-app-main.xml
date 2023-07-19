@@ -186,17 +186,6 @@ output application/json
     <flow name="patch:\doctor:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-approve-doctor-by-admin" doc:id="fca70e7d-9284-4ca0-862b-796f94aee6a6" message="start-approve-doctor-by-admin-api"/>
 		<flow-ref doc:name="approve-doctor-by-admin" doc:id="3511c9d0-7de5-4a99-ba82-23eff0c4592a" name="approve-doctor-by-admin"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Doctor updated succussfully",
-  statusCode: "200"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-approve-doctor-by-admin" doc:id="aed254ce-150c-47ee-adf4-cf8843b0b35a" message="end-approve-doctor-by-admin-api"/>
     </flow>
     <flow name="get:\getDoctorAppointment\(doctor_id):ngpe-app-config">
@@ -290,33 +279,11 @@ output application/json
     <flow name="post:\appointment:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-add-appointment" doc:id="5a765e40-7480-4c04-814c-b9f71652aec4" message="start-add-appointment-api"/>
 		<flow-ref doc:name="post-add-appointment" doc:id="a84ebc8f-b899-4b80-b53b-0450472ef7f6" name="post-add-appointment"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Appointment created succussfully",
-  statusCode: "201"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-add-appointment" doc:id="2dc53054-deb0-4a19-9510-1072009e79fd" message="start-add-appointment-api"/>
     </flow>
     <flow name="post:\doctor:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="add-doctor" doc:id="69af0a05-cac0-4ac2-812b-09abf6b747de" message="add-doctor-api"/>
 		<flow-ref doc:name="post-add-doctor" doc:id="9718f3b9-51d2-4c2f-b5ff-28ec929ebd2b" name="post-add-doctor"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Doctor created succussfully",
-  statusCode: "201"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-doctor" doc:id="796fd893-206e-481f-8926-07beaf3640d7" message="end-doctor-api"/>
     </flow>
     <flow name="post:\patient:application\json:ngpe-app-config">
