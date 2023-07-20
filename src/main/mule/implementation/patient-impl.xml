@@ -74,7 +74,11 @@ output application/json
 	<sub-flow name="get-patient-appointments" doc:id="b6848412-d310-4a3f-9f3b-193084ddfe4e" >
 		<set-variable value="#[attributes.uriParams.'patient_id']" doc:name="Patient Id" doc:id="3bf9f941-145b-4e99-a8a0-3ad2de95bfb9" variableName="patient_id"/>
 		<db:query-single doc:name="Fetching Appointments Records" doc:id="e125a08a-bad1-4549-9dbd-66c74bc47316" config-ref="Database_Config" target="appointments_data">
-			<db:sql ><![CDATA[SELECT * FROM appointments WHERE user_id= :patient_id]]></db:sql>
+			<db:sql ><![CDATA[SELECT app.start_time,app.end_time,app.appointment_status,app.symptoms, app.date,sp.specialization,h.hospital,u.first_name as doctor_first_name,u.last_name as doctor_last_name
+FROM appointments app
+LEFT JOIN  users u ON u.id = app.doctor_id
+LEFT JOIN  specializations sp ON app.specialization_id = sp.id
+LEFT JOIN  hospitals h ON app.hospital_id = h.id where app.user_id = :patient_id;]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
 	"patient_id": vars.patient_id
 }]]]></db:input-parameters>

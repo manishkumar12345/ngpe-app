@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	
-	<sub-flow name="common-send-mail" doc:id="a9dfdb09-475e-4164-bcc2-ed37e9e4fa6e" >
-		<ee:transform doc:name="Transform Message" doc:id="50ef9f84-2d1c-4bc1-8c25-dd9e2ff05110" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"from-address":"satishkumar@yopmail.com",
-	"to-address":"satishkumar@yopmail.com",
-	"subject":"Test",
-	"body":"test body"
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<email:send doc:name="Send" doc:id="dd2097e5-a814-4595-a3fb-668dfa86e89b" config-ref="Email_SMTP" fromAddress='#[payload."from-address"]' subject="#[payload.subject]">
-			<email:to-addresses >
-				<email:to-address value='#[payload."to-address"]' />
+	<sub-flow name="send-mail-after-book-appointment" doc:id="a9dfdb09-475e-4164-bcc2-ed37e9e4fa6e" >
+		<choice doc:name="Choice" doc:id="c4aedffa-9311-40e6-b768-6fca7f178a7c" >
+			<when expression="#[vars.operationType=='book-appointment']">
+				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.appointmentData.generatedKeys]" doc:name="appointmentData" doc:id="773939e9-361d-4b0b-a318-6bb07f49104a" variableName="appointmentData" />
+				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="86d3f423-1e34-4c45-bf4f-e2ddc9ed985d" config-ref="Database_Config" target="sendEmailData">
+			<db:sql><![CDATA[SELECT patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
+doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email, doctor.phone_number as doctor_phone
+FROM users patient, users doctor
+WHERE patient.id= :patient_id AND doctor.id= :doctor_id;]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	patient_id: vars.appointmentData.user_id,
+	doctor_id: vars.appointmentData.doctor_id
+	
+}]]]></db:input-parameters>
+		</db:query-single>
+				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="718a077c-fe5a-4852-b010-cb23e6bb7385" variableName="sendEmailData" />
+				<email:send doc:name="Send Main to Patient" doc:id="bb407981-54d3-46c2-a5b7-b5867d944e26" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+			<email:to-addresses>
+				<email:to-address value="#[vars.sendEmailData.patient_email]" />
 			</email:to-addresses>
-			<email:body contentType="text/plain" >
-				<email:content ><![CDATA[#[payload."from-address"]]]></email:content>
+			<email:body>
+				<email:content><![CDATA[#["Hi " ++ vars.sendEmailData.patient_first_name ++ "," ++ "thank you for making an appointment with NGPE App on " ++ vars.appointmentData.date ++  " at " ++ vars.appointmentData.start_time ++ "." ++ " please have patience for the confirmation "]]]></email:content>
 			</email:body>
 		</email:send>
+				<email:send doc:name="Send Main to Doctor" doc:id="dd2097e5-a814-4595-a3fb-668dfa86e89b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+			<email:to-addresses>
+				<email:to-address value="#[vars.sendEmailData.doctor_email]" />
+			</email:to-addresses>
+			<email:body contentType="text/plain">
+				<email:content><![CDATA[#["Hi "++ vars.sendEmailData.doctor_first_name++ " " ++ vars.sendEmailData.doctor_last_name ++ " One appointment request on " ++ vars.appointmentData.date ++ "at "++ vars.appointmentData.start_time ++ "to " ++ vars.appointmentData.end_time ++" for "++ vars.sendEmailData.patient_first_name ++" "++ vars.sendEmailData.patient_last_name]]]></email:content>
+			</email:body>
+		</email:send>
+			</when>
+		</choice>
 	</sub-flow>
 </mule>

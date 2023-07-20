@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 	<sub-flow name="post-add-appointment" doc:id="da2b97ad-3a3d-4612-997a-3a88b5f60f3a" >
 		<logger level="INFO" doc:name="start-book-appointment" doc:id="3c707845-d2cc-4465-99d6-a212b39ffe56" message="start-book-appointment"/>
 		<ee:transform doc:name="start-time" doc:id="c8bdbc8c-f6e6-461b-8034-c1b7d8a380d2" >
@@ -36,6 +37,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 		<logger level="INFO" doc:name="Logger" doc:id="7761c41b-bfef-4a79-ac78-59f1b8ff336e" message="the value of #[vars.start_time]"/>
 		<logger level="INFO" doc:name="Logger" doc:id="7ee1fee7-ba65-411b-b234-bb5244fceb2a" message="the value of end time #[vars.end_time]"/>
 		<set-variable value="#['not approved']" doc:name="Set appointment status" doc:id="5b7ebf30-0096-4efe-94c5-ca3c3afc924a" variableName="appointment_status"/>
+		<set-variable value="#['book-appointment']" doc:name="Set Variable" doc:id="5545536c-863b-42d9-a53e-ae05f62b5a6b" variableName="operationType"/>
 		<db:query-single doc:name="Check-doctor-time-slot" doc:id="f96f389a-da4b-420d-b92e-5a614b88f10b" config-ref="Database_Config" target="checkAppointmentSlot">
 			<db:sql ><![CDATA[SELECT * FROM appointments WHERE start_time >= :start_time and end_time <= :end_time AND doctor_id = :doctor_id]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
@@ -44,7 +46,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 	end_time : vars.end_time
 }]]]></db:input-parameters>
 		</db:query-single>
-		<choice doc:name="Choice" doc:id="c03c6d74-154e-46a7-802f-e82361ffd81d" >
+		<choice doc:name="Choice" doc:id="c03c6d74-154e-46a7-802f-e82361ffd81d" tracking:enable-default-events="true">
 			<when expression="#[isEmpty(vars.checkAppointmentSlot)]">
 				<logger level="INFO" doc:name="Logger" doc:id="4b0ba5c3-3a20-46c3-8882-f67d9b042732" />
 				<db:insert doc:name="Insert-appointment" doc:id="1d1f7a55-bccf-4c44-a2cb-bb19675df811" config-ref="Database_Config" autoGenerateKeys="true" target="appointmentData">
@@ -70,6 +72,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 				</db:insert>
 				<choice doc:name="Choice" doc:id="9558b537-9735-4825-9104-608f0e975339">
 					<when expression="#[!isEmpty(vars.appointmentData.generatedKeys.appointment_id)]">
+						<logger level="INFO" doc:name="Logger" doc:id="73bf5be1-85c5-49eb-af66-e08d5a654f03" message="#[payload]"/>
 						<logger level="INFO" doc:name="insert-appointment-successfully" doc:id="508082ce-296c-4c4f-989b-6658fe7ac00c" message="insert-appointment-successfully"/>
 						<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
 					<ee:message>
@@ -83,6 +86,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="aa95fa42-ee91-480f-8f42-0b36f3ad73cf" name="send-mail-after-book-appointment" />
 					</when>
 					<otherwise >
 						<logger level="INFO" doc:name="appointment-not-inserted" doc:id="e07f2bb0-7081-48c6-a3e2-db92982ccc29" message="appointment-not-inserted"/>
