@@ -122,17 +122,6 @@ output application/json
     <flow name="put:\appointment:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-update-appointment" doc:id="d8b70d52-fd65-4b98-985b-7582f04a3299" message="start-update-appointment"/>
 		<flow-ref doc:name="put-update-appointment" doc:id="62876303-cfbc-4535-94d8-e196eb39519f" name="put-update-appointment"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Patient updated succussfully",
-  statusCode: "200"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-update-appointment" doc:id="4a420595-25b8-400c-944e-156ab1f5b344" message="end-update-appointment"/>
     </flow>
     <flow name="put:\patient:application\json:ngpe-app-config">
@@ -143,33 +132,11 @@ output application/json
     <flow name="patch:\approvedAppointmentByDoctor:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-approve-appointment-by-doctor-api" doc:id="7d9d47e3-5855-499e-a28d-012ece731f13" message="start-approve-appointment-by-doctor-api"/>
 		<flow-ref doc:name="approve-appointment-by-doctor" doc:id="673482c6-9a13-4c0d-880f-7288805ad9de" name="approve-appointment-by-doctor"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Appointment updated succussfully",
-  statusCode: "200"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-approve-appointment-by-doctor-api" doc:id="92c40ad2-f588-4f6c-8ac9-07acbd8fa20d" message="end-approve-appointment-by-doctor-api"/>
     </flow>
     <flow name="patch:\cancelAppointment:application\json:ngpe-app-config">
         <logger level="INFO" doc:name="start-cancel-appointment-by-user" doc:id="0ec69195-d1ff-417f-bca8-4c0b24051d79" message="start-cancel-appointment-by-user-api"/>
 		<flow-ref doc:name="cancel-appointment-by-users" doc:id="6a384538-f06c-41a9-9be5-e5259c657fa8" name="cancel-appointment-by-users"/>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-  message: "Appointment updated succussfully",
-  statusCode: "200"
-}]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-cancel-appointment-by-user" doc:id="e53b018d-b2d2-40b2-8934-0a4deb92c071" message="end-cancel-appointment-by-user"/>
     </flow>
     <flow name="patch:\doctor:application\json:ngpe-app-config">
@@ -180,44 +147,6 @@ output application/json
     <flow name="get:\getDoctorAppointment\(doctor_id):ngpe-app-config">
         <logger level="INFO" doc:name="start-get-doctor-appointment" doc:id="f8bc73bc-f6ed-4209-8ab5-97b8906ac5da" message="start-get-doctor-appointment-api"/>
 		<flow-ref doc:name="get-doctor-appointments" doc:id="10d9afd7-8bb3-4245-886a-d06d6f289c05" name="get-doctor-appointments"/>
-		<ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="doctor_id">attributes.uriParams.'doctor_id'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    patient_id: 10,
-    doctor_id: 20,
-    hospital_id: 12,
-    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
-    patient_name: "Komal Singh",
-    doctor_name: "Sukhi Singh",
-    specialization: "Neurosciences",
-    preferred_time: "10:30 AM",
-    appointment_status: "approved",
-    created_at: "2023-07-06T21:00:00"
-  }, 
-  {
-    patient_id: 10,
-    doctor_id: 21,
-    hospital_id: 12,
-    hospital_name: "AIIMS. All India Institute of Medical Sciences, New Delhi",
-    patient_name: "Komal Singh",
-    doctor_name: "Sukhi Singh",
-    specialization: "Neurosciences",
-    preferred_time: "11:30 AM",
-    appointment_status: "not approved",
-    created_at: "2023-07-06T21:00:00"
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
 		<logger level="INFO" doc:name="end-get-doctor-appointment" doc:id="ec712ce3-108e-418b-b03c-db1416c21011" message="end-get-doctor-appointment-api"/>
     </flow>
     <flow name="get:\getPatientAppointment\(patient_id):ngpe-app-config">

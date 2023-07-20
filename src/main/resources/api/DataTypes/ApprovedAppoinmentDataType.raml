@@ -3,10 +3,12 @@
 type: object
 
 properties:
+  appointment_id:
+    type: integer
   user_id:
     description: Pataient ID
     type: integer
   appointment_status:
-    enum: ["not approved", "approved", "cancel"]
+    enum: ["not approved", "approved", "canceled"]
   appointment_status_notes?:
     type: string 

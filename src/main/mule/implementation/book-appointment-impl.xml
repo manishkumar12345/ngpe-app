@@ -7,11 +7,35 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<sub-flow name="post-add-appointment" doc:id="da2b97ad-3a3d-4612-997a-3a88b5f60f3a" >
 		<logger level="INFO" doc:name="start-book-appointment" doc:id="3c707845-d2cc-4465-99d6-a212b39ffe56" message="start-book-appointment"/>
-		<ee:transform doc:name="start-time" doc:id="c8bdbc8c-f6e6-461b-8034-c1b7d8a380d2" >
+		<ee:transform doc:name="set-variable appointment_date" doc:id="5e26f72a-4cd9-43a5-97f4-e6a4cf758b61">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="appointment_date" ><![CDATA[%dw 2.0
+output application/json
+var appointment_date = payload.date
+---
+((appointment_date)) as Date { format: "yyyy-MM-dd" }]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="set-variable current_date" doc:id="2723ba49-ce4f-44ce-9f1d-1466aa8b50df" >
 			<ee:message >
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="start_time" ><![CDATA[%dw 2.0
+				<ee:set-variable variableName="current_date" ><![CDATA[%dw 2.0
+output application/json
+var current_date = now()
+---
+((current_date)) as Date { format: "yyyy-MM-dd" }]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="65ae5c97-d2e4-4f7e-a005-143eb7ba034c" >
+			<when expression="#[vars.appointment_date&gt;vars.current_date]">
+				<ee:transform doc:name="start-time" doc:id="c8bdbc8c-f6e6-461b-8034-c1b7d8a380d2">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="start_time"><![CDATA[%dw 2.0
 output application/json
 var appointment_date = payload.date
 var start_times = payload.start_time
@@ -20,11 +44,11 @@ var appointmentStartTime = appointment_date ++" "++ start_times
 ((appointmentStartTime)) as LocalDateTime { format: "yyyy-MM-dd HH:mm:ss" } as DateTime as String {format : "yyyy-MM-dd HH:mm:ss"}]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<ee:transform doc:name="end-time" doc:id="6e533871-3353-4516-b8a5-f77392cb4ddd" >
-			<ee:message >
+				<ee:transform doc:name="end-time" doc:id="6e533871-3353-4516-b8a5-f77392cb4ddd">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="end_time" ><![CDATA[%dw 2.0
+			<ee:variables>
+				<ee:set-variable variableName="end_time"><![CDATA[%dw 2.0
 output application/json
 var appointment_date = payload.date
 var end_times = payload.end_time
@@ -33,28 +57,27 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 ((appointmentEndTime)) as LocalDateTime { format: "yyyy-MM-dd HH:mm:ss" } as DateTime as String {format : "yyyy-MM-dd HH:mm:ss"}]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="7761c41b-bfef-4a79-ac78-59f1b8ff336e" message="the value of #[vars.start_time]"/>
-		<logger level="INFO" doc:name="Logger" doc:id="7ee1fee7-ba65-411b-b234-bb5244fceb2a" message="the value of end time #[vars.end_time]"/>
-		<set-variable value="#['not approved']" doc:name="Set appointment status" doc:id="5b7ebf30-0096-4efe-94c5-ca3c3afc924a" variableName="appointment_status"/>
-		<db:query-single doc:name="Check-doctor-time-slot" doc:id="f96f389a-da4b-420d-b92e-5a614b88f10b" config-ref="Database_Config" target="checkAppointmentSlot">
-			<db:sql ><![CDATA[SELECT * FROM appointments WHERE start_time >= :start_time and end_time <= :end_time AND doctor_id = :doctor_id]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{
+				<logger level="INFO" doc:name="Logger" doc:id="7ee1fee7-ba65-411b-b234-bb5244fceb2a" message="the value of end time #[vars.end_time]" />
+				<set-variable value="#['not approved']" doc:name="Set appointment status" doc:id="5b7ebf30-0096-4efe-94c5-ca3c3afc924a" variableName="appointment_status" />
+				<db:query-single doc:name="Check-doctor-time-slot" doc:id="f96f389a-da4b-420d-b92e-5a614b88f10b" config-ref="Database_Config" target="checkAppointmentSlot">
+			<db:sql><![CDATA[SELECT * FROM appointments WHERE start_time >= :start_time and end_time <= :end_time AND doctor_id = :doctor_id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
 	doctor_id : payload.doctor_id,
 	start_time : vars.start_time,
 	end_time : vars.end_time
 }]]]></db:input-parameters>
 		</db:query-single>
-		<choice doc:name="Choice" doc:id="c03c6d74-154e-46a7-802f-e82361ffd81d" >
+				<choice doc:name="Choice" doc:id="c03c6d74-154e-46a7-802f-e82361ffd81d">
 			<when expression="#[isEmpty(vars.checkAppointmentSlot)]">
 				<logger level="INFO" doc:name="Logger" doc:id="4b0ba5c3-3a20-46c3-8882-f67d9b042732" />
 				<db:insert doc:name="Insert-appointment" doc:id="1d1f7a55-bccf-4c44-a2cb-bb19675df811" config-ref="Database_Config" autoGenerateKeys="true" target="appointmentData">
-					<db:sql ><![CDATA[INSERT INTO appointments(
+					<db:sql><![CDATA[INSERT INTO appointments(
 	user_id, doctor_id, hospital_id, date, specialization_id, start_time, end_time, symptoms, appointment_status, added_by,  created_at)
 	VALUES ( :patient_id, :doctor_id, :hospital_id, :date, :specialization_id, :start_time, :end_time, :symptoms, :appointment_status, :added_by, :created_at);]]></db:sql>
-					<db:parameter-types >
+					<db:parameter-types>
 						<db:parameter-type key="appointment_status" type="OTHER" />
 					</db:parameter-types>
-					<db:input-parameters ><![CDATA[#[{
+					<db:input-parameters><![CDATA[#[{
 	patient_id : payload.user_id,
 	doctor_id : payload.doctor_id,
 	hospital_id : payload.hospital_id,
@@ -70,7 +93,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 				</db:insert>
 				<choice doc:name="Choice" doc:id="9558b537-9735-4825-9104-608f0e975339">
 					<when expression="#[!isEmpty(vars.appointmentData.generatedKeys.appointment_id)]">
-						<logger level="INFO" doc:name="insert-appointment-successfully" doc:id="508082ce-296c-4c4f-989b-6658fe7ac00c" message="insert-appointment-successfully"/>
+						<logger level="INFO" doc:name="insert-appointment-successfully" doc:id="508082ce-296c-4c4f-989b-6658fe7ac00c" message="insert-appointment-successfully" />
 						<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
@@ -84,11 +107,11 @@ output application/json
 					</ee:message>
 				</ee:transform>
 					</when>
-					<otherwise >
-						<logger level="INFO" doc:name="appointment-not-inserted" doc:id="e07f2bb0-7081-48c6-a3e2-db92982ccc29" message="appointment-not-inserted"/>
-						<ee:transform doc:name="false-message" doc:id="8ba2e117-1a9b-40d3-843c-93f56db0d0f3" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+					<otherwise>
+						<logger level="INFO" doc:name="appointment-not-inserted" doc:id="e07f2bb0-7081-48c6-a3e2-db92982ccc29" message="appointment-not-inserted" />
+						<ee:transform doc:name="false-message" doc:id="8ba2e117-1a9b-40d3-843c-93f56db0d0f3">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -97,18 +120,18 @@ output application/json
 	'message': 'Something went worng. Please try after some time.'
 }]]></ee:set-payload>
 							</ee:message>
-							<ee:variables >
-								<ee:set-variable variableName="httpStatus" ><![CDATA[200]]></ee:set-variable>
+							<ee:variables>
+								<ee:set-variable variableName="httpStatus"><![CDATA[200]]></ee:set-variable>
 							</ee:variables>
 						</ee:transform>
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="slot-already-exist" doc:id="17d9b1f9-6281-4ab6-9e0e-557480dbe8e5" message="Slot already exist for this doctor"/>
-				<ee:transform doc:name="final-message" doc:id="a5a7d0c8-7e6a-4cd0-8774-a6c90093827f" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+			<otherwise>
+				<logger level="INFO" doc:name="slot-already-exist" doc:id="17d9b1f9-6281-4ab6-9e0e-557480dbe8e5" message="Slot already exist for this doctor" />
+				<ee:transform doc:name="final-message" doc:id="a5a7d0c8-7e6a-4cd0-8774-a6c90093827f">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -119,11 +142,294 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="appointment-date should be greater than current date" doc:id="13a053da-9977-4d1c-b6ba-dd48aa9f701d" message="appointment-date should be greater than current date"/>
+				<ee:transform doc:name="success-message" doc:id="3e6b90f5-8572-4e21-bdfb-144a12bcba35" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": true,
+	"message" :  "Appointment date should be greater than current date. Please try with feature date." 
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="put-update-appointment" doc:id="030d0333-bdd7-4fb5-a190-4e9f87ea8cec" >
-		<logger level="INFO" doc:name="Logger" doc:id="79e17c74-2cdd-4ca0-9b5a-c577b664d379" message="test"/>
+		<logger level="INFO" doc:name="put-appointment-sub-flow-start" doc:id="79e17c74-2cdd-4ca0-9b5a-c577b664d379" message="put-appointment-sub-flow-start"/>
+		<set-variable value="#[payload.appointment_id]" doc:name="Set appointment_id" doc:id="be21641b-a1bb-46ce-b5a7-13b210cf16a5" variableName="appointment_id"/>
+		<ee:transform doc:name="set-variable appointment_date" doc:id="0bbad44e-29af-4efe-98ca-f893fc33772e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="appointment_date" ><![CDATA[%dw 2.0
+output application/json
+var appointment_date = payload.date
+---
+((appointment_date)) as Date { format: "yyyy-MM-dd" }]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="set-variable current_date" doc:id="517a41ff-95ee-4023-b04b-db1f7a992d94" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="current_date" ><![CDATA[%dw 2.0
+output application/json
+var current_date = now()
+---
+((current_date)) as Date { format: "yyyy-MM-dd" }]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="94575426-722c-4bd2-903e-82a0f0edeea6" >
+			<when expression="#[vars.appointment_date&gt;vars.current_date]">
+				<ee:transform doc:name="set variable start-time" doc:id="91ab60ed-d92c-4644-9845-f0ec528b53aa">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="start_time"><![CDATA[%dw 2.0
+output application/json
+var appointment_date = payload.date
+var start_times = payload.start_time
+var appointmentStartTime = appointment_date ++" "++ start_times
+---
+((appointmentStartTime)) as LocalDateTime { format: "yyyy-MM-dd HH:mm:ss" } as DateTime as String {format : "yyyy-MM-dd HH:mm:ss"}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<ee:transform doc:name="set variable end-time" doc:id="2fc2b9ae-d19f-413d-8472-0ff23bf6f8eb">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="end_time"><![CDATA[%dw 2.0
+output application/json
+var appointment_date = payload.date
+var end_times = payload.end_time
+var appointmentEndTime = appointment_date ++ " " ++ end_times
+---
+((appointmentEndTime)) as LocalDateTime { format: "yyyy-MM-dd HH:mm:ss" } as DateTime as String {format : "yyyy-MM-dd HH:mm:ss"}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<set-variable value="#['not approved']" doc:name="appointment_status" doc:id="c23fc012-e945-4c3e-9b9c-a2bc73c8687d" variableName="appointment_status" />
+				<db:query-single doc:name="check-appointment-approve-or-not" doc:id="dabe6c7a-f607-473a-85e8-58f400ea6af0" config-ref="Database_Config" target="checkAppointmentApprovedOrNot">
+			<db:sql><![CDATA[SELECT * FROM appointments WHERE appointment_status = :appointment_status AND appointment_id = :appointment_id]]></db:sql>
+			<db:parameter-types>
+				<db:parameter-type key="appointment_status" type="OTHER" />
+			</db:parameter-types>
+			<db:input-parameters><![CDATA[#[{
+	appointment_id : vars.appointment_id,
+	appointment_status : vars.appointment_status
+}]]]></db:input-parameters>
+		</db:query-single>
+				<logger level="INFO" doc:name="Logger" doc:id="7b5d625e-8fdb-40a2-baae-518f1d160181" />
+				<choice doc:name="Choice" doc:id="9f80d7f6-2fbf-4c83-bcef-4fdb7c3e21d9">
+			<when expression="#[!isEmpty(vars.checkAppointmentApprovedOrNot)]">
+				<logger level="INFO" doc:name="appointment-is-not-approve" doc:id="ec8c3742-a69e-49bf-a433-e353a33ee12e" message="appointment-is-not-approve" />
+				<db:query-single doc:name="Check-doctor-time-slot" doc:id="b866bcee-594f-4278-842b-854b82057904" config-ref="Database_Config" target="checkAppointmentSlot">
+					<db:sql><![CDATA[SELECT * FROM appointments WHERE start_time >= :start_time and end_time <= :end_time AND doctor_id = :doctor_id]]></db:sql>
+					<db:parameter-types>
+					</db:parameter-types>
+					<db:input-parameters><![CDATA[#[{
+	doctor_id : payload.doctor_id,
+	start_time : vars.start_time,
+	end_time : vars.end_time
+}]]]></db:input-parameters>
+				</db:query-single>
+				<logger level="INFO" doc:name="Logger" doc:id="e5061683-ce46-4551-9647-fa6cc535bf65" message="check time slot #[vars.checkAppointmentSlot]" />
+				<choice doc:name="Choice" doc:id="1b09aa8b-b158-4cb6-9dbd-f70e45de91cc">
+					<when expression="#[isEmpty(vars.checkAppointmentSlot)]">
+						<logger level="INFO" doc:name="time-slot-empty" doc:id="634428ba-e912-453f-adc7-373295c739f2" message="time-slot-empty" />
+						<ee:transform doc:name="set-variable appointmentPatchData" doc:id="bfa492a5-bc15-40c1-a968-f8c33cb54fc3">
+							<ee:message>
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable variableName="appointmentPatchData"><![CDATA[%dw 2.0
+output application/json skipNullOn = "everywhere"
+---
+{
+	user_id : payload.user_id,
+	doctor_id : payload.doctor_id,
+	hospital_id : payload.hospital_id,
+	date : payload.date as Date { format : "yyyy-MM-dd"},
+	specialization_id : payload.specialization_id,
+	start_time : vars.start_time,
+	end_time : vars.end_time,
+	symptoms : payload.symptoms,
+	appointment_status : vars.appointment_status,
+	updated_by : payload.user_id
+}]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<ee:transform doc:name="set-variable updateAppointmentData" doc:id="653870a0-579f-49c3-b0a2-36f800e2bdb1">
+							<ee:message>
+							</ee:message>
+							<ee:variables>
+								<ee:set-variable variableName="updateAppointmentData"><![CDATA[%dw 2.0
+output application/json
+---
+"UPDATE appointments SET " ++ (vars.appointmentPatchData mapObject {
+	"Query":  $$ ++ " = '" ++ $ ++ "'"
+}
+pluck $ joinBy "," )
+++ ", updated_at= '" ++ now() as String {format: "yyyy-MM-dd HH:m:s"} ++ "' WHERE appointment_id= " ++ vars.appointment_id]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+						<db:update doc:name="update-appointment-data" doc:id="c13324fd-b44c-486f-a94c-4a5d6b2511eb" config-ref="Database_Config">
+							<db:sql><![CDATA[#[vars.updateAppointmentData]]]></db:sql>
+							<db:parameter-types>
+							</db:parameter-types>
+						</db:update>
+						<ee:transform doc:name="success-message" doc:id="e45030c6-7eb4-4731-8bf9-3c28b700800f">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Success"    : true,
+	"statusCode": 200,
+	'message': 'The Appointment ID ' ++ vars.appointment_id as String ++ ' has been successfully updated'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<logger level="INFO" doc:name="slot-already-booked" doc:id="f867362d-4cf3-4dec-93c5-b031c5cbc791" message="slot-already-booked" />
+						<ee:transform doc:name="success-message" doc:id="4ed11e6f-d8f7-43bb-b63d-dc9f0bdf7c95">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": false,
+	"message" :  "Slot already booked" 
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="appointment-is-already-approved" doc:id="7217e88e-3afb-4af0-a188-da344dd6d9db" message="appointment-is-already-approved" />
+				<ee:transform doc:name="success-message" doc:id="d5056108-e53d-42eb-b3ae-bcacc4f0095c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": false,
+	"message" :  "Your Appointment already approved. You can-not update this appointment." 
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="appointment-date should be greater than current date" doc:id="dca6ec8e-fcc4-44ba-929e-257ccdffac73" message="appointment-date should be greater than current date"/>
+				<ee:transform doc:name="success-message" doc:id="55ebfcd4-aacb-4c77-a415-d4a1a7d05c59" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": true,
+	"message" :  "Appointment date should be greater than current date. Please try with feature date." 
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="put-appointment-sub-flow-end" doc:id="e3033d91-b3c3-4f2d-8ce9-8eb305b72822" message="put-appointment-sub-flow-end"/>
 	</sub-flow>
 	<sub-flow name="cancel-appointment-by-users" doc:id="a34c6d55-350d-485b-84ef-d399d18be971" >
-		<logger level="INFO" doc:name="Logger" doc:id="6d94715e-6703-438e-9209-ac18b40c1f6a" message="test"/>
+		<logger level="INFO" doc:name="cancel-appointment-patient" doc:id="6d94715e-6703-438e-9209-ac18b40c1f6a" message="cancel-appointment"/>
+		<db:query-single doc:name="check-appointment-status" doc:id="2ff32193-c0aa-4d2e-b3fd-a669534606e7" config-ref="Database_Config" target="checkAppointmentStatus">
+			<db:sql ><![CDATA[SELECT appointment_status FROM appointments WHERE appointment_id = :appointment_id]]></db:sql>
+			<db:parameter-types >
+			</db:parameter-types>
+			<db:input-parameters ><![CDATA[#[{
+	appointment_id : payload.appointment_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<logger level="INFO" doc:name="Logger" doc:id="d398e194-431e-4fa3-822a-e4272300d892" message="test test #[vars.checkAppointmentStatus]"/>
+		<choice doc:name="Choice" doc:id="25463fb2-9cd1-45a5-b600-129f065fbf5b" >
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'not approved']">
+				<set-variable value="#[payload.appointment_id]" doc:name="Set appointment_id" doc:id="1f7b3a9f-55e6-4d61-9910-7cd86694a5b0" variableName="appointment_id" />
+				<db:update doc:name="Update-appointment-status" doc:id="29acf2ba-0c4f-4d54-92e9-75c7b4fd4f14" config-ref="Database_Config" target="updatedAppointment">
+			<db:sql><![CDATA[UPDATE appointments SET appointment_status= :appointment_status, updated_by= :updated_by, updated_at= :updated_at WHERE appointment_id= :appointment_id;]]></db:sql>
+			<db:parameter-types>
+				<db:parameter-type key="appointment_status" type="OTHER" />
+			</db:parameter-types>
+			<db:input-parameters><![CDATA[#[{
+	appointment_status : payload.appointment_status,
+	appointment_id : vars.appointment_id,
+	updated_by : payload.user_id,
+	updated_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
+}]]]></db:input-parameters>
+		</db:update>
+				<choice doc:name="Choice" doc:id="0ee0b797-1544-4671-a349-af4476a35c11">
+			<when expression="#[!isEmpty(vars.updatedAppointment)]">
+				<logger level="INFO" doc:name="Logger" doc:id="70d1ac13-dd0d-4c0a-a00b-006df5c22413" message="check data sssss #[vars.updatedAppointment]" />
+				<logger level="INFO" doc:name="appointment-status-updated" doc:id="ee1457c1-64bc-47cd-9727-8bdcfc565dc9" message="appointment-status-updated" />
+				<db:insert doc:name="Insert-appointment-log" doc:id="9d173feb-8ed5-4f97-bdc1-6ece36babdeb" config-ref="Database_Config">
+					<db:sql><![CDATA[INSERT INTO appointments_status_log(appointment_id, appointment_status_notes, added_by, created_at)
+	VALUES ( :appointment_id, :appointment_status_notes, :added_by, :created_at);]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	appointment_id : vars.appointment_id,
+	appointment_status_notes : payload.appointment_status_notes,
+	added_by : payload.user_id,
+	created_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
+}]]]></db:input-parameters>
+				</db:insert>
+				<ee:transform doc:name="success-message" doc:id="2e2ccfd5-ef3a-44fa-9c29-7d79b48bdd14">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment has been cancelled successfully.'
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[200]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+					<otherwise>
+						<ee:transform doc:name="Transform Message" doc:id="41ec899b-b182-42ed-aa81-b23d83c957a7" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment has been cancelled successfully.'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="appointment already cancelled" doc:id="82a20992-5069-44cf-8549-ea61b9c4cadc" message="appointment already cancelled"/>
+				<ee:transform doc:name="Transform Message" doc:id="39430c1d-c1f9-4a32-8fc8-675e12f23990">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment already cancelled.'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>

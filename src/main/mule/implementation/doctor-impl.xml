@@ -108,7 +108,52 @@ output application/json
 		<logger level="INFO" doc:name="enter-sub-flow-post-add-doctor-end" doc:id="2eaee5c9-fb86-4caf-9a78-773cbe1f89b3" message="enter-sub-flow-post-add-doctor-end"/>
 	</sub-flow>
 	<sub-flow name="get-doctor-appointments" doc:id="648d048c-67ab-4247-8bea-a93529d6def6" >
-		<logger level="INFO" doc:name="Logger" doc:id="e89188c4-59e4-4fa8-a1a9-b201bb5d3655" message="doctor"/>
+		<logger level="INFO" doc:name="get-doctor-appointment-subflow-start" doc:id="e89188c4-59e4-4fa8-a1a9-b201bb5d3655" message="get-doctor-appointment-subflow-start"/>
+		<db:select doc:name="get-doctor-appointment" doc:id="30eb2395-c76e-48e3-9239-236f3c36e4a6" config-ref="Database_Config" target="getDoctorAppointment">
+			<db:sql ><![CDATA[SELECT app.start_time,app.end_time,app.appointment_status,app.symptoms, app.date,sp.specialization,h.hospital,u.first_name as patient_first_name,u.last_name as patient_last_name
+FROM appointments app
+LEFT JOIN  users u ON u.id = app.user_id
+LEFT JOIN  specializations sp ON app.specialization_id = sp.id
+LEFT JOIN  hospitals h ON app.hospital_id = h.id where app.appointment_status != :appointment_status and app.doctor_id = :doctor_id;]]></db:sql>
+			<db:parameter-types >
+				<db:parameter-type key="appointment_status" type="OTHER" />
+			</db:parameter-types>
+			<db:input-parameters ><![CDATA[#[{
+	appointment_status : 'canceled',
+	doctor_id : attributes.uriParams.'doctor_id'
+	
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="469cca13-6a5d-4b65-bc2e-ec84e4c2e1aa" >
+			<when expression="#[sizeOf(vars.getDoctorAppointment)&gt;0]">
+				<logger level="INFO" doc:name="Logger" doc:id="d741f3ce-52c5-4fa8-93f4-0cad9872a6e2" />
+				<ee:transform doc:name="success-message" doc:id="c76594b8-3897-4044-b6e8-039aa49c7834" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success" : true,
+	"result" : vars.getDoctorAppointment
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="doctor has no appointment" doc:id="80cf5965-ab46-460b-8838-0a1d03019abe" message="doctor has no appointment"/>
+				<ee:transform doc:name="success-message" doc:id="9b4523fd-ed25-439c-b063-0018976b0e89" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success" : true,
+	"result" : 'No record found'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 	<sub-flow name="approve-doctor-by-admin" doc:id="1c857a9e-a60f-4ad8-90a3-d157090c179f" >
 		<logger level="INFO" doc:name="enter-approve-doctor-by-admin" doc:id="c0e5cc5b-a91b-4c20-8606-d1c425024b65" message="enter-approve-doctor-by-admin"/>
@@ -176,6 +221,84 @@ WHERE user_id = :doctor_id;]]></db:sql>
 		</choice>
 	</sub-flow>
 	<sub-flow name="approve-appointment-by-doctor" doc:id="8506fb9c-0fcd-4c78-b257-1e53e21137ec" >
-		<logger level="INFO" doc:name="Logger" doc:id="630783b6-85be-4944-83e4-d47b80a0f3b9" message="approve"/>
+		<logger level="INFO" doc:name="approve-appointment-by-doctor-subflow-start" doc:id="630783b6-85be-4944-83e4-d47b80a0f3b9" message="approve-appointment-by-doctor-subflow-start"/>
+		<db:query-single doc:name="check-appointment-status" doc:id="2064b41f-4457-4ab0-8f25-bb3afe739d9a" config-ref="Database_Config" target="checkAppointmentStatus">
+			<db:sql ><![CDATA[SELECT appointment_status FROM appointments WHERE appointment_id = :appointment_id]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	appointment_id : payload.appointment_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="485c4a7e-8da1-438d-90a2-5dcc35052c45" >
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'not approved']">
+				<set-variable value="#[payload.appointment_id]" doc:name="Set appointment_id" doc:id="b2441772-da4e-4e73-b297-f0141c3b18e7" variableName="appointment_id"/>
+				<db:update doc:name="Update" doc:id="72860ddd-5967-446d-b272-8538dba81c8b" config-ref="Database_Config" target="updatedAppointment">
+					<db:sql ><![CDATA[UPDATE appointments SET appointment_status= :appointment_status, updated_by= :updated_by, updated_at= :updated_at WHERE appointment_id= :appointment_id;]]></db:sql>
+					<db:parameter-types >
+						<db:parameter-type key="appointment_status" type="OTHER" />
+					</db:parameter-types>
+					<db:input-parameters ><![CDATA[#[{
+	appointment_status : payload.appointment_status,
+	appointment_id : vars.appointment_id,
+	updated_by : payload.user_id,
+	updated_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
+}]]]></db:input-parameters>
+				</db:update>
+				<choice doc:name="Choice" doc:id="769e87d2-5b0c-410b-b742-8148d1db6da4" >
+					<when expression="#[!isEmpty(vars.updatedAppointment)]">
+						<logger level="INFO" doc:name="appointment-status-updated" doc:id="6ac58def-c144-4c81-af2c-887d189bae15" message="appointment-status-updated"/>
+						<db:insert doc:name="Insert-appointment-log" doc:id="fa3b26f1-0b27-4824-9746-1b8329ecb576" config-ref="Database_Config">
+							<db:sql ><![CDATA[INSERT INTO appointments_status_log(appointment_id, appointment_status_notes, added_by, created_at)
+	VALUES ( :appointment_id, :appointment_status_notes, :added_by, :created_at);]]></db:sql>
+							<db:input-parameters ><![CDATA[#[{
+	appointment_id : vars.appointment_id,
+	appointment_status_notes : payload.appointment_status_notes,
+	added_by : payload.user_id,
+	created_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
+}]]]></db:input-parameters>
+						</db:insert>
+						<ee:transform doc:name="success-message" doc:id="f14c9cba-17f8-49c4-9ce7-f82c5372f81c" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment has been approved successfully.'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="46732cb2-1495-4c41-b4e0-97a02d0759ff" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment has been approved successfully.'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="a81f8659-c40b-4320-8ca4-aa96038e802b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment already approved.'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 	</sub-flow>
 </mule>
