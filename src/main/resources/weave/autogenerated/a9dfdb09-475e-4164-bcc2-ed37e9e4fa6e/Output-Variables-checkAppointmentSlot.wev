@@ -1,0 +1,9 @@
+%dw 2.0
+
+type auto_a9dfdb09_475e_4164_bcc2_ed37e9e4fa6e_Output_Variables_checkAppointmentSlot = { _?: java_lang_Object }
+type java_lang_Object = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+

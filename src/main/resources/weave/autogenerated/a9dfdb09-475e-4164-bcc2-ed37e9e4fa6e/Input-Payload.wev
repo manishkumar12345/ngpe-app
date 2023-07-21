@@ -1,0 +1,17 @@
+%dw 2.0
+
+type auto_a9dfdb09_475e_4164_bcc2_ed37e9e4fa6e_Input_Payload = {
+  date: String, 
+  symptoms: String, 
+  doctor_id: Number, 
+  start_time: String, 
+  specialization_id: Number, 
+  appointment_status: "not approved", 
+  user_id: Number, 
+  added_by: Number, 
+  end_time?: String, 
+  created_at: String, 
+  hospital_id: Number, 
+  _?: Any
+}
+
