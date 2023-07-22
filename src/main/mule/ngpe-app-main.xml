@@ -167,7 +167,7 @@ output application/json
 		<flow-ref doc:name="get-doctor-appointments" doc:id="10d9afd7-8bb3-4245-886a-d06d6f289c05" name="get-doctor-appointments"/>
 		<logger level="INFO" doc:name="end-get-doctor-appointment" doc:id="ec712ce3-108e-418b-b03c-db1416c21011" message="end-get-doctor-appointment-api"/>
     </flow>
-    <flow name="get:\getPatientAppointment\(patient_id):ngpe-app-config">
+    <flow name="get:\getPatientAppointment\(patient_id):ngpe-app-config" doc:id="c651e6f7-5ca7-4337-8808-39809ad2be33">
         <logger level="INFO" doc:name="start-get-patient-appointments" doc:id="34e3e422-32d5-43e6-9180-837cad93bece" message="start-get-patient-appointments-api"/>
 		<flow-ref doc:name="get-patient-appointments" doc:id="b33002af-0a24-461d-8927-4bbf072a8b64" name="get-patient-appointments"/>
 		<logger level="INFO" doc:name="end-get-patient-appointments" doc:id="e5ef2348-4da5-4270-b86f-c90978694be9" message="end-get-patient-appointments-api"/>

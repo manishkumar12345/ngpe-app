@@ -61,6 +61,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 		</ee:transform>
 				<logger level="INFO" doc:name="Logger" doc:id="7ee1fee7-ba65-411b-b234-bb5244fceb2a" message="the value of end time #[vars.end_time]" />
 				<set-variable value="#['not approved']" doc:name="Set appointment status" doc:id="5b7ebf30-0096-4efe-94c5-ca3c3afc924a" variableName="appointment_status" />
+				<set-variable value="#['book-appointment']" doc:name="operationType" doc:id="b7d0ee6c-de88-4b54-a732-451217bb15a5" variableName="operationType"/>
 				<db:query-single doc:name="Check-doctor-time-slot" doc:id="f96f389a-da4b-420d-b92e-5a614b88f10b" config-ref="Database_Config" target="checkAppointmentSlot">
 			<db:sql><![CDATA[SELECT * FROM appointments WHERE start_time >= :start_time and end_time <= :end_time AND doctor_id = :doctor_id]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
@@ -101,7 +102,8 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 						<logger level="INFO" doc:name="Logger" doc:id="73bf5be1-85c5-49eb-af66-e08d5a654f03" message="#[payload]"/>
 						<logger level="INFO" doc:name="insert-appointment-successfully" doc:id="508082ce-296c-4c4f-989b-6658fe7ac00c" message="insert-appointment-successfully"/>
 
-						<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="aa95fa42-ee91-480f-8f42-0b36f3ad73cf" name="send-mail-after-book-appointment" />
+								<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -113,7 +115,6 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="aa95fa42-ee91-480f-8f42-0b36f3ad73cf" name="send-mail-after-book-appointment" />
 					</when>
 					<otherwise>
 						<logger level="INFO" doc:name="appointment-not-inserted" doc:id="e07f2bb0-7081-48c6-a3e2-db92982ccc29" message="appointment-not-inserted" />
@@ -221,6 +222,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 			</ee:variables>
 		</ee:transform>
 				<set-variable value="#['not approved']" doc:name="appointment_status" doc:id="c23fc012-e945-4c3e-9b9c-a2bc73c8687d" variableName="appointment_status" />
+				<set-variable value="#['update']" doc:name="operationType" doc:id="72639a3f-22c9-4e80-ab7c-bbd101d5c5c2" variableName="operationType" />
 				<db:query-single doc:name="check-appointment-approve-or-not" doc:id="dabe6c7a-f607-473a-85e8-58f400ea6af0" config-ref="Database_Config" target="checkAppointmentApprovedOrNot">
 			<db:sql><![CDATA[SELECT * FROM appointments WHERE appointment_status = :appointment_status AND appointment_id = :appointment_id]]></db:sql>
 			<db:parameter-types>
@@ -246,7 +248,7 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 }]]]></db:input-parameters>
 				</db:query-single>
 				<logger level="INFO" doc:name="Logger" doc:id="e5061683-ce46-4551-9647-fa6cc535bf65" message="check time slot #[vars.checkAppointmentSlot]" />
-				<choice doc:name="Choice" doc:id="1b09aa8b-b158-4cb6-9dbd-f70e45de91cc">
+						<choice doc:name="Choice" doc:id="1b09aa8b-b158-4cb6-9dbd-f70e45de91cc">
 					<when expression="#[isEmpty(vars.checkAppointmentSlot)]">
 						<logger level="INFO" doc:name="time-slot-empty" doc:id="634428ba-e912-453f-adc7-373295c739f2" message="time-slot-empty" />
 						<ee:transform doc:name="set-variable appointmentPatchData" doc:id="bfa492a5-bc15-40c1-a968-f8c33cb54fc3">
@@ -289,7 +291,8 @@ pluck $ joinBy "," )
 							<db:parameter-types>
 							</db:parameter-types>
 						</db:update>
-						<ee:transform doc:name="success-message" doc:id="e45030c6-7eb4-4731-8bf9-3c28b700800f">
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="0aee7f34-9865-4ba6-ba27-f172049b76ee" name="send-mail-after-book-appointment"/>
+								<ee:transform doc:name="success-message" doc:id="e45030c6-7eb4-4731-8bf9-3c28b700800f">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -304,7 +307,7 @@ output application/json
 					</when>
 					<otherwise>
 						<logger level="INFO" doc:name="slot-already-booked" doc:id="f867362d-4cf3-4dec-93c5-b031c5cbc791" message="slot-already-booked" />
-						<ee:transform doc:name="success-message" doc:id="4ed11e6f-d8f7-43bb-b63d-dc9f0bdf7c95">
+								<ee:transform doc:name="success-message" doc:id="4ed11e6f-d8f7-43bb-b63d-dc9f0bdf7c95">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -318,7 +321,7 @@ output application/json
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise>
+					<otherwise>
 				<logger level="INFO" doc:name="appointment-is-already-approved" doc:id="7217e88e-3afb-4af0-a188-da344dd6d9db" message="appointment-is-already-approved" />
 				<ee:transform doc:name="success-message" doc:id="d5056108-e53d-42eb-b3ae-bcacc4f0095c">
 					<ee:message>
@@ -362,6 +365,7 @@ output application/json
 	appointment_id : payload.appointment_id
 }]]]></db:input-parameters>
 		</db:query-single>
+		<set-variable value="#['canceled']" doc:name="operationType" doc:id="1257fe56-c662-45ba-ac69-a3dc54910fec" variableName="operationType"/>
 		<logger level="INFO" doc:name="Logger" doc:id="d398e194-431e-4fa3-822a-e4272300d892" message="test test #[vars.checkAppointmentStatus]"/>
 		<choice doc:name="Choice" doc:id="25463fb2-9cd1-45a5-b600-129f065fbf5b" >
 			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'not approved']">
@@ -392,7 +396,9 @@ output application/json
 	created_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
 }]]]></db:input-parameters>
 				</db:insert>
-				<ee:transform doc:name="success-message" doc:id="2e2ccfd5-ef3a-44fa-9c29-7d79b48bdd14">
+				<set-variable value="#[vars.checkAppointmentStatus]" doc:name="updatedAppointment" doc:id="737104cc-4174-4988-a5a9-dd9387ce2b2a" variableName="updatedAppointment" />
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="25429f0f-519c-486b-88b9-0341f4443712" name="send-mail-after-book-appointment" />
+						<ee:transform doc:name="success-message" doc:id="2e2ccfd5-ef3a-44fa-9c29-7d79b48bdd14">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json

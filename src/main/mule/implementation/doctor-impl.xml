@@ -182,7 +182,7 @@ WHERE id = :doctor_id;]]></db:sql>
 				<choice doc:name="Choice" doc:id="0e0d45b2-5e0f-432c-bdbd-d534c92ede22" >
 					<when expression="#[!isEmpty(payload.status_notes)]">
 						<logger level="INFO" doc:name="update-doctor-status-note" doc:id="374193e9-845a-4826-b62e-740140227377" message="update-doctor-status-note"/>
-						<db:update doc:name="update-doctor-status-note" doc:id="cff3831b-bac8-4bf5-81cb-07298b65abc1" config-ref="Database_Config" >
+						<db:update doc:name="update-doctor-status-note" doc:id="cff3831b-bac8-4bf5-81cb-07298b65abc1" config-ref="Database_Config" target="updatedAppointment">
 							<db:sql ><![CDATA[UPDATE doctor_meta
 SET status_note = :status_note
 WHERE user_id = :doctor_id;]]></db:sql>
@@ -257,9 +257,19 @@ WHERE user_id = :doctor_id;]]></db:sql>
 	created_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
 }]]]></db:input-parameters>
 						</db:insert>
-						<ee:transform doc:name="success-message" doc:id="f14c9cba-17f8-49c4-9ce7-f82c5372f81c" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
+						<set-variable value="#['approved']" doc:name="Set Variable" doc:id="34345b66-66f1-49a1-a62b-39ac1652cfb5" variableName="operationType" />
+						<scatter-gather doc:name="Scatter-Gather" doc:id="ad41d97b-59a2-4c26-b03c-7e1b120f057c" >
+							<route >
+								<flow-ref doc:name="send-mail-after-book-appointment" doc:id="0e2b9163-28da-4c93-b3a6-37734e64d385" name="send-mail-after-book-appointment" />
+							</route>
+							<route >
+								<flow-ref doc:name="insert-event-in-calendar" doc:id="b3a54a55-ba6c-4f27-a6c1-a64db0f1fc55" name="insert-event-in-calendar" />
+							</route>
+
+						</scatter-gather>
+						<ee:transform doc:name="success-message" doc:id="f14c9cba-17f8-49c4-9ce7-f82c5372f81c">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {

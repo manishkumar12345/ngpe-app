@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_3cb67864_659e_49c8_bb4a_8bd70b128078_Input_Variables_updatedAppointment = {|
+  affectedRows?: Number, 
+  generatedKeys?: { _?: Number }
+|} {"typeAlias": "StatementResult",
+"typeId": "org.mule.extension.db.api.StatementResult"}
+

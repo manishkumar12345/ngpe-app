@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_3cb67864_659e_49c8_bb4a_8bd70b128078_Output_Variables_checkAppointmentStatus = {| appointment_status?: String |}
+

@@ -1,0 +1,139 @@
+%dw 2.0
+
+type auto_3cb67864_659e_49c8_bb4a_8bd70b128078_Output_Payload = {
+  reminders?: {
+    overrides?: Array<{      method?: String,       minutes?: Number,       _?: Any    }>, 
+    useDefault?: Boolean, 
+    _?: Any
+  }, 
+  attachments?: Array<{    iconLink?: String,     fileUrl?: String,     mimeType?: String,     title?: String,     fileId?: String,     _?: Any  }>, 
+  gadget?: {
+    preferences?: { _?: Any }, 
+    iconLink?: String, 
+    display?: String, 
+    link?: String, 
+    width?: Number, 
+    title?: String, 
+    "type"?: String, 
+    height?: Number, 
+    _?: Any
+  }, 
+  colorId?: String, 
+  hangoutLink?: String, 
+  attendeesOmitted?: Boolean, 
+  description?: String, 
+  source?: {
+    title?: String, 
+    url?: String, 
+    _?: Any
+  }, 
+  extendedProperties?: {
+    shared?: { _?: Any }, 
+    "private"?: { _?: Any }, 
+    _?: Any
+  }, 
+  guestsCanModify?: Boolean, 
+  recurringEventId?: String, 
+  endTimeUnspecified?: Boolean, 
+  guestsCanSeeOtherGuests?: Boolean, 
+  end?: {
+    date?: String, 
+    dateTime?: String, 
+    timeZone?: String, 
+    _?: Any
+  }, 
+  id?: String, 
+  locked?: Boolean, 
+  anyoneCanAddSelf?: Boolean, 
+  summary?: String, 
+  creator?: {
+    displayName?: String, 
+    self?: Boolean, 
+    id?: String, 
+    email?: String, 
+    _?: Any
+  }, 
+  privateCopy?: Boolean, 
+  visibility?: String, 
+  attendees?: Array<{    additionalGuests?: Number,     resource?: Boolean,     displayName?: String,     organizer?: Boolean,     self?: Boolean,     comment?: String,     optional?: Boolean,     id?: String,     responseStatus?: String,     email?: String,     _?: Any  }>, 
+  created?: String, 
+  htmlLink?: String, 
+  kind?: String, 
+  iCalUID?: String, 
+  start?: {
+    date?: String, 
+    dateTime?: String, 
+    timeZone?: String, 
+    _?: Any
+  }, 
+  originalStartTime?: {
+    date?: String, 
+    dateTime?: String, 
+    timeZone?: String, 
+    _?: Any
+  }, 
+  eventType?: String, 
+  recurrence?: Array<String>, 
+  sequence?: Number, 
+  organizer?: {
+    displayName?: String, 
+    self?: Boolean, 
+    id?: String, 
+    email?: String, 
+    _?: Any
+  }, 
+  transparency?: String, 
+  conferenceData?: {
+    entryPoints?: Array<{      entryPointFeatures?: Array<String>, 
+      password?: String, 
+      regionCode?: String, 
+      pin?: String, 
+      entryPointType?: String, 
+      accessCode?: String, 
+      meetingCode?: String, 
+      label?: String, 
+      uri?: String, 
+      passcode?: String, 
+      _?: Any
+    }>, 
+    notes?: String, 
+    conferenceId?: String, 
+    createRequest?: {
+      requestId?: String, 
+      conferenceSolutionKey?: {
+        "type"?: String, 
+        _?: Any
+      }, 
+      status?: {
+        statusCode?: String, 
+        _?: Any
+      }, 
+      _?: Any
+    }, 
+    signature?: String, 
+    conferenceSolution?: {
+      name?: String, 
+      iconUri?: String, 
+      key?: {
+        "type"?: String, 
+        _?: Any
+      }, 
+      _?: Any
+    }, 
+    parameters?: {
+      addOnParameters?: {
+        parameters?: { _?: Any }, 
+        _?: Any
+      }, 
+      _?: Any
+    }, 
+    _?: Any
+  }, 
+  etag?: String, 
+  location?: String, 
+  guestsCanInviteOthers?: Boolean, 
+  updated?: String, 
+  status?: String, 
+  _?: Any
+}
+
