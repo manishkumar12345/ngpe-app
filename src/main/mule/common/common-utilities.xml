@@ -24,22 +24,109 @@ appointment_id: vars.appointmentData.generatedKeys.appointment_id
 }]]]></db:input-parameters>
 		</db:query-single>
 				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="718a077c-fe5a-4852-b010-cb23e6bb7385" variableName="sendEmailData" />
-				<email:send doc:name="Send Main to Patient" doc:id="bb407981-54d3-46c2-a5b7-b5867d944e26" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+				<scatter-gather doc:name="Scatter-Gather" doc:id="ad44f017-d999-41c7-9a40-f4dc07739030" >
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="7435681a-17c5-4fb2-9971-8d0c4ef9ec4b" target="sendMail" targetValue="#[payload]">
+					<content>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi #[vars.sendEmailData.patient_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Thanks for getting in touch. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a email regarding an appointment at NGPE App with  #[vars.sendEmailData.doctor_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please wait for confirmation.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+						<email:send doc:name="Send Main to Patient" doc:id="bb407981-54d3-46c2-a5b7-b5867d944e26" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
 			<email:to-addresses>
 				<email:to-address value="#[vars.sendEmailData.patient_email]" />
 			</email:to-addresses>
-			<email:body contentType="text/plain">
-				<email:content><![CDATA[#["Hi " ++ vars.sendEmailData.patient_first_name ++ "," ++ "thank you for making an appointment with NGPE App on " ++ vars.sendEmailData.date ++  " at " ++ vars.sendEmailData.start_time ++ "." ++ " please have patience for the confirmation "]]]></email:content>
+			<email:body contentType="text/html">
+				<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 			</email:body>
 		</email:send>
-				<email:send doc:name="Send Main to Doctor" doc:id="dd2097e5-a814-4595-a3fb-668dfa86e89b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					</route>
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="eba941c7-b480-4ee3-b721-e48288e618df" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi Dr. #[vars.sendEmailData.doctor_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a email regarding an appointment at NGPE App with  #[vars.sendEmailData.patient_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please check your availability and confirm patient.&lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Doctor" doc:id="dd2097e5-a814-4595-a3fb-668dfa86e89b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
 			<email:to-addresses>
 				<email:to-address value="#[vars.sendEmailData.doctor_email]" />
 			</email:to-addresses>
-			<email:body contentType="text/plain">
-				<email:content><![CDATA[#["Hi "++ vars.sendEmailData.doctor_first_name++ " " ++ vars.sendEmailData.doctor_last_name ++ " One appointment request on " ++ vars.sendEmailData.date ++ "at "++ vars.sendEmailData.start_time ++ "to " ++ vars.sendEmailData.end_time ++" for "++ vars.sendEmailData.patient_first_name ++" "++ vars.sendEmailData.patient_last_name]]]></email:content>
+			<email:body contentType="text/html">
+				<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 			</email:body>
 		</email:send>
+					</route>
+				</scatter-gather>
 			</when>
 			<when expression="#[vars.operationType=='canceled']">
 				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="f1bedc18-1dfb-4aa0-abc2-bb53ddab5014" config-ref="Database_Config" target="sendEmailData" >
@@ -53,22 +140,107 @@ appointment_id: vars.appointment_id
 }]]]></db:input-parameters>
 				</db:query-single>
 				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="08e6ae5d-7f55-4354-b9aa-eb7505fabb9c" variableName="sendEmailData" />
-				<email:send doc:name="Send Main to Patient" doc:id="fda8dabd-1c5f-4202-a2d0-56d0476973ff" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+				<scatter-gather doc:name="Scatter-Gather" doc:id="b54bcf46-c00b-4691-9772-dadaa73db40a" >
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="9f30eb65-7e19-45dd-b20e-d392c72fc797" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi #[vars.sendEmailData.patient_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a email regarding cancelation of appointment at NGPE App with  Dr. #[vars.sendEmailData.doctor_first_name]. at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date].Your appointment has been cancelled.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Patient" doc:id="fda8dabd-1c5f-4202-a2d0-56d0476973ff" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.patient_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Hi " ++ vars.sendEmailData.patient_first_name ++ "," ++ "your appointment has been cancelled successfully"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
-				<email:send doc:name="Send Main to Doctor" doc:id="c23f9eec-a1bf-40c1-ba2b-cc17dbfb4de2" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+					</route>
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="387da708-9ccf-42f3-ae84-c45eae391251" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi Dr. #[vars.sendEmailData.doctor_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a email regarding cancelation of appointment at NGPE App with patient #[vars.sendEmailData.patient_first_name]. at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Doctor" doc:id="c23f9eec-a1bf-40c1-ba2b-cc17dbfb4de2" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Hi "++ vars.sendEmailData.doctor_first_name++ " " ++ vars.sendEmailData.doctor_last_name ++ " An appointment request on " ++ vars.sendEmailData.date ++ "at "++ vars.sendEmailData.start_time ++ "to " ++ vars.sendEmailData.end_time ++" for "++ vars.sendEmailData.patient_first_name ++" "++ vars.sendEmailData.patient_last_name ++ " has been cancelled successfully"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
+					</route>
+				</scatter-gather>
 			</when>
 			<when expression="#[vars.operationType=='update']">
 				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="f002467c-9292-44b8-9f95-d921ba85eb8b" config-ref="Database_Config" target="sendEmailData" >
@@ -82,22 +254,112 @@ appointment_id: vars.appointment_id
 }]]]></db:input-parameters>
 				</db:query-single>
 				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="ead17020-d3b7-41f1-ad27-832e131e498f" variableName="sendEmailData" />
-				<email:send doc:name="Send Main to Patient" doc:id="e7658c3c-1e8c-458d-bfbf-e6a90110494b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+				<scatter-gather doc:name="Scatter-Gather" doc:id="87c70745-7c2f-4d1e-ae1a-46a5751b9fb8" >
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="2f79f789-210f-4d2b-bb27-d38a5c2dc438" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi #[vars.sendEmailData.patient_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Thanks for updating appointment. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is email regarding update your appointment at NGPE App with Dr #[vars.sendEmailData.doctor_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please have patience for the confirmation.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Patient" doc:id="e7658c3c-1e8c-458d-bfbf-e6a90110494b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.patient_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Updated"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
-				<email:send doc:name="Send Main to Doctor" doc:id="db3aa436-99d8-43c7-9589-e2ff0f6d5285" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+					</route>
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="577c3ff7-6533-4ce9-a27f-bc1f12ab136f" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi Dr #[vars.sendEmailData.doctor_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Thanks for updating appointment. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is email regarding update your appointment at NGPE App with #[vars.sendEmailData.patient_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please check your availability and confirm patient.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Doctor" doc:id="db3aa436-99d8-43c7-9589-e2ff0f6d5285" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Updated"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
+					</route>
+				</scatter-gather>
 			</when>
 			<when expression="#[vars.operationType=='approved']">
 				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="7c476f88-cfc8-4a7b-b8af-f6066ac826aa" config-ref="Database_Config" target="sendEmailData" >
@@ -111,22 +373,112 @@ appointment_id: vars.appointment_id
 }]]]></db:input-parameters>
 				</db:query-single>
 				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="3e7ba1e5-8031-4cc0-aab9-4281e5b7c4df" variableName="sendEmailData" />
-				<email:send doc:name="Send Main to Patient" doc:id="4804b22b-6dc7-4ae8-b9a2-2a11134076a3" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+				<scatter-gather doc:name="Scatter-Gather" doc:id="1b6d07d3-2716-47da-966f-a979b347ebf4" >
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="e038c37b-6f95-4303-b645-21ceccb69430" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi #[vars.sendEmailData.patient_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Thanks for getting in touch. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a confirmation email regarding your appointment at NGPE App with with Dr. #[vars.sendEmailData.doctor_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please be available 30 minutes prior to your appointed time.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Patient" doc:id="4804b22b-6dc7-4ae8-b9a2-2a11134076a3" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Confirmation of your appointment with NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.patient_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Appointment approved successfully"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
-				<email:send doc:name="Send Main to Doctor" doc:id="de486858-8837-46bd-9863-183153f56e23" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
-					<email:to-addresses >
+					</route>
+					<route >
+						<parse-template doc:name="Parse Template" doc:id="20ed5d5f-f8a7-4bb9-b4b9-4f3a44ca3b54" target="sendMail" targetValue="#[payload]">
+							<content >&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+    &lt;title&gt;Email&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div align=&quot;center&quot;&gt;
+      &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot; class=&quot;aw-bgc&quot; align=&quot;center&quot; role=&quot;presentation&quot; style=&quot;
+    background-color: #e9f0ff;font-weight: 400; text-size-adjust: 100%; color: rgb(51, 51, 51);    width: 600px; font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px;&quot;&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td style=&quot;text-size-adjust: 100%; color: rgb(51, 51, 51); font-family: Tahoma, Arial, sans-serif; border-collapse: collapse; border-spacing: 0px; border-width: 0px; border-style: none; font-size: 14px; padding: 20px;&quot;&gt;
+                &lt;table border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; width=&quot;100%&quot;&gt;
+                    &lt;tbody&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Hi Dr. #[vars.sendEmailData.doctor_first_name], &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Thanks for getting in touch. &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;This is a confirmation email regarding your appointment at NGPE App with with #[vars.sendEmailData.patient_first_name] at #[vars.sendEmailData.start_time] on #[vars.sendEmailData.date]. Please be available 30 minutes prior to your appointed time.  &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Regards, &lt;/td&gt;
+                        &lt;/tr&gt;
+                        &lt;tr&gt;
+                            &lt;td style=&quot;font-size: 14px; margin: 0; padding-bottom: 12px; line-height: 1.5;&quot;&gt;Next Generation Patient Examination NGPE APP&lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</content>
+						</parse-template>
+						<email:send doc:name="Send Main to Doctor" doc:id="de486858-8837-46bd-9863-183153f56e23" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP">
+					<email:to-addresses>
 						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
 					</email:to-addresses>
-					<email:body contentType="text/plain" >
-						<email:content ><![CDATA[#["Appointment approved successfully"]]]></email:content>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#[vars.sendMail]]]></email:content>
 					</email:body>
 				</email:send>
+					</route>
+				</scatter-gather>
 			</when>
 		</choice>
 	</sub-flow>
@@ -150,7 +502,7 @@ output application/json
 {
   "summary": "Your appointment has been approved",
 //  "location": "800 Howard St., San Francisco, CA 94103",
-  "description": "test description",
+//  "description": "test description",
   "start": {
     "dateTime": vars.insertEventData.start_time,
     "timeZone": "Asia/Kolkata"},
@@ -158,9 +510,9 @@ output application/json
     "dateTime": vars.insertEventData.end_time,
     "timeZone": "Asia/Kolkata"
   },
-  "recurrence": [
-    "RRULE:FREQ=DAILY;COUNT=2"
-  ],
+//  "recurrence": [
+//    "RRULE:FREQ=DAILY;COUNT=2"
+//  ],
   "attendees": [
     {"email": vars.insertEventData.doctor_email},
     {"email": vars.insertEventData.patient_email}

@@ -101,7 +101,8 @@ var appointmentEndTime = appointment_date ++ " " ++ end_times
 						<logger level="INFO" doc:name="Logger" doc:id="73bf5be1-85c5-49eb-af66-e08d5a654f03" message="#[payload]"/>
 						<logger level="INFO" doc:name="insert-appointment-successfully" doc:id="508082ce-296c-4c4f-989b-6658fe7ac00c" message="insert-appointment-successfully"/>
 
-						<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="aa95fa42-ee91-480f-8f42-0b36f3ad73cf" name="send-mail-after-book-appointment" />
+								<ee:transform doc:name="success-message" doc:id="6403497e-8c3f-4d96-9ee7-94619e6db3d8">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -113,7 +114,6 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="aa95fa42-ee91-480f-8f42-0b36f3ad73cf" name="send-mail-after-book-appointment" />
 					</when>
 					<otherwise>
 						<logger level="INFO" doc:name="appointment-not-inserted" doc:id="e07f2bb0-7081-48c6-a3e2-db92982ccc29" message="appointment-not-inserted" />
@@ -394,7 +394,9 @@ output application/json
 	created_at : now() as String {format: "yyyy-MM-dd HH:m:s"}
 }]]]></db:input-parameters>
 				</db:insert>
-				<ee:transform doc:name="success-message" doc:id="2e2ccfd5-ef3a-44fa-9c29-7d79b48bdd14">
+				<set-variable value="#[vars.checkAppointmentStatus]" doc:name="updatedAppointment" doc:id="737104cc-4174-4988-a5a9-dd9387ce2b2a" variableName="updatedAppointment" />
+						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="25429f0f-519c-486b-88b9-0341f4443712" name="send-mail-after-book-appointment" />
+						<ee:transform doc:name="success-message" doc:id="2e2ccfd5-ef3a-44fa-9c29-7d79b48bdd14">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -409,8 +411,6 @@ output application/json
 						<ee:set-variable variableName="httpStatus"><![CDATA[200]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-						<set-variable value="#[vars.checkAppointmentStatus]" doc:name="updatedAppointment" doc:id="737104cc-4174-4988-a5a9-dd9387ce2b2a" variableName="updatedAppointment"/>
-						<flow-ref doc:name="send-mail-after-book-appointment" doc:id="25429f0f-519c-486b-88b9-0341f4443712" name="send-mail-after-book-appointment"/>
 			</when>
 					<otherwise>
 						<ee:transform doc:name="Transform Message" doc:id="41ec899b-b182-42ed-aa81-b23d83c957a7" >
