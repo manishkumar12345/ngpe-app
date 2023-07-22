@@ -13,7 +13,6 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 	<sub-flow name="send-mail-after-book-appointment" doc:id="a9dfdb09-475e-4164-bcc2-ed37e9e4fa6e" >
 		<choice doc:name="Choice" doc:id="c4aedffa-9311-40e6-b768-6fca7f178a7c" >
 			<when expression="#[vars.operationType=='book-appointment']">
-<!-- [STUDIO:"appointmentData"]				<set-variable value="#[%dw 2.0&#10;output application/json&#10;&#45;&#45;-&#10;vars.appointmentData.generatedKeys&#93;" doc:name="appointmentData" doc:id="773939e9-361d-4b0b-a318-6bb07f49104a" variableName="appointmentData" /> [STUDIO] -->
 				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="86d3f423-1e34-4c45-bf4f-e2ddc9ed985d" config-ref="Database_Config" target="sendEmailData">
 			<db:sql><![CDATA[SELECT app.start_time,app.end_time,app.symptoms, app.date,patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
 doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email,doctor.phone_number as doctor_phone FROM appointments app
@@ -21,8 +20,6 @@ LEFT JOIN  users patient ON patient.id = app.user_id
 LEFT JOIN  users doctor ON doctor.id = app.doctor_id
 WHERE app.appointment_id= :appointment_id]]></db:sql>
 			<db:input-parameters><![CDATA[#[{
-//	patient_id: vars.appointmentData.user_id,
-//	doctor_id: vars.appointmentData.doctor_id
 appointment_id: vars.appointmentData.generatedKeys.appointment_id
 }]]]></db:input-parameters>
 		</db:query-single>
@@ -44,9 +41,153 @@ appointment_id: vars.appointmentData.generatedKeys.appointment_id
 			</email:body>
 		</email:send>
 			</when>
+			<when expression="#[vars.operationType=='canceled']">
+				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="f1bedc18-1dfb-4aa0-abc2-bb53ddab5014" config-ref="Database_Config" target="sendEmailData" >
+					<db:sql ><![CDATA[SELECT app.start_time,app.end_time,app.symptoms, app.date,patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
+doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email,doctor.phone_number as doctor_phone FROM appointments app
+LEFT JOIN  users patient ON patient.id = app.user_id
+LEFT JOIN  users doctor ON doctor.id = app.doctor_id
+WHERE app.appointment_id= :appointment_id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+appointment_id: vars.appointment_id
+}]]]></db:input-parameters>
+				</db:query-single>
+				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="08e6ae5d-7f55-4354-b9aa-eb7505fabb9c" variableName="sendEmailData" />
+				<email:send doc:name="Send Main to Patient" doc:id="fda8dabd-1c5f-4202-a2d0-56d0476973ff" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.patient_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Hi " ++ vars.sendEmailData.patient_first_name ++ "," ++ "your appointment has been cancelled successfully"]]]></email:content>
+					</email:body>
+				</email:send>
+				<email:send doc:name="Send Main to Doctor" doc:id="c23f9eec-a1bf-40c1-ba2b-cc17dbfb4de2" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Hi "++ vars.sendEmailData.doctor_first_name++ " " ++ vars.sendEmailData.doctor_last_name ++ " An appointment request on " ++ vars.sendEmailData.date ++ "at "++ vars.sendEmailData.start_time ++ "to " ++ vars.sendEmailData.end_time ++" for "++ vars.sendEmailData.patient_first_name ++" "++ vars.sendEmailData.patient_last_name ++ " has been cancelled successfully"]]]></email:content>
+					</email:body>
+				</email:send>
+			</when>
+			<when expression="#[vars.operationType=='update']">
+				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="f002467c-9292-44b8-9f95-d921ba85eb8b" config-ref="Database_Config" target="sendEmailData" >
+					<db:sql ><![CDATA[SELECT app.start_time,app.end_time,app.symptoms, app.date,patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
+doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email,doctor.phone_number as doctor_phone FROM appointments app
+LEFT JOIN  users patient ON patient.id = app.user_id
+LEFT JOIN  users doctor ON doctor.id = app.doctor_id
+WHERE app.appointment_id= :appointment_id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+appointment_id: vars.appointment_id
+}]]]></db:input-parameters>
+				</db:query-single>
+				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="ead17020-d3b7-41f1-ad27-832e131e498f" variableName="sendEmailData" />
+				<email:send doc:name="Send Main to Patient" doc:id="e7658c3c-1e8c-458d-bfbf-e6a90110494b" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.patient_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Updated"]]]></email:content>
+					</email:body>
+				</email:send>
+				<email:send doc:name="Send Main to Doctor" doc:id="db3aa436-99d8-43c7-9589-e2ff0f6d5285" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Updated"]]]></email:content>
+					</email:body>
+				</email:send>
+			</when>
+			<when expression="#[vars.operationType=='approved']">
+				<db:query-single doc:name="get-patient-and-doctor-record" doc:id="7c476f88-cfc8-4a7b-b8af-f6066ac826aa" config-ref="Database_Config" target="sendEmailData" >
+					<db:sql ><![CDATA[SELECT app.start_time,app.end_time,app.symptoms, app.date,patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
+doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email,doctor.phone_number as doctor_phone FROM appointments app
+LEFT JOIN  users patient ON patient.id = app.user_id
+LEFT JOIN  users doctor ON doctor.id = app.doctor_id
+WHERE app.appointment_id= :appointment_id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+appointment_id: vars.appointment_id
+}]]]></db:input-parameters>
+				</db:query-single>
+				<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.sendEmailData]" doc:name="sendEmailData" doc:id="3e7ba1e5-8031-4cc0-aab9-4281e5b7c4df" variableName="sendEmailData" />
+				<email:send doc:name="Send Main to Patient" doc:id="4804b22b-6dc7-4ae8-b9a2-2a11134076a3" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.patient_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Appointment approved successfully"]]]></email:content>
+					</email:body>
+				</email:send>
+				<email:send doc:name="Send Main to Doctor" doc:id="de486858-8837-46bd-9863-183153f56e23" config-ref="Email_SMTP" fromAddress="satish.kumar@bitsinglass.com" subject="Notification from NGPE APP" >
+					<email:to-addresses >
+						<email:to-address value="#[vars.sendEmailData.doctor_email]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" >
+						<email:content ><![CDATA[#["Appointment approved successfully"]]]></email:content>
+					</email:body>
+				</email:send>
+			</when>
 		</choice>
 	</sub-flow>
-	<sub-flow name="common-utilitiesSub_Flow" doc:id="3cb67864-659e-49c8-bb4a-8bd70b128078" >
+	<sub-flow name="insert-event-in-calendar" doc:id="3cb67864-659e-49c8-bb4a-8bd70b128078" >
+		<db:query-single doc:name="get-patient-and-doctor-record" doc:id="e133a3fd-42fe-4851-b04d-f99dc35c3647" config-ref="Database_Config" target="insertEventData">
+			<db:sql><![CDATA[SELECT app.start_time,app.end_time,app.symptoms, app.date,patient.first_name as patient_first_name, patient.last_name as patient_last_name, patient.email as patient_email, patient.phone_number as patient_phone,
+doctor.first_name as doctor_first_name, doctor.last_name as doctor_last_name ,doctor.email as doctor_email,doctor.phone_number as doctor_phone FROM appointments app
+LEFT JOIN  users patient ON patient.id = app.user_id
+LEFT JOIN  users doctor ON doctor.id = app.doctor_id
+WHERE app.appointment_id= :appointment_id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+appointment_id: vars.appointment_id
+}]]]></db:input-parameters>
+		</db:query-single>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.insertEventData]" doc:name="insertEventData" doc:id="0a9d4054-0fff-427c-9d14-39552267e044" variableName="insertEventData"/>
+		<ee:transform doc:name="Transform Message" doc:id="6f0cf6f6-2c38-4c01-af9c-7ae563c478e3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "summary": "Your appointment has been approved",
+//  "location": "800 Howard St., San Francisco, CA 94103",
+  "description": "test description",
+  "start": {
+    "dateTime": vars.insertEventData.start_time,
+    "timeZone": "Asia/Kolkata"},
+  "end": {
+    "dateTime": vars.insertEventData.end_time,
+    "timeZone": "Asia/Kolkata"
+  },
+  "recurrence": [
+    "RRULE:FREQ=DAILY;COUNT=2"
+  ],
+  "attendees": [
+    {"email": vars.insertEventData.doctor_email},
+    {"email": vars.insertEventData.patient_email}
+  ],
+  "reminders": {
+    "useDefault": false,
+    "overrides": [
+      {"method": "email", "minutes": 24},
+      {"method": "popup", "minutes": 10}
+    ]
+  },
+  "conferenceData": {
+            "createRequest": {
+            "conferenceSolutionKey": {
+                "type": "hangoutsMeet"
+            },
+            "requestId": "fgchvng5"
+            },
+            "entryPoints": [
+                {
+                    "entryPointType": "video"
+                }
+                ]
+        },
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<google-calendar:create-calendars-events-by-calendar-id doc:name="Events insert" doc:id="78f0dca8-3534-42ac-a832-596a906af95b" config-ref="Google_Calendar_Connector_Config" calendarId="satish.kumar@bitsinglass.com"/>
 	</sub-flow>
 </mule>
