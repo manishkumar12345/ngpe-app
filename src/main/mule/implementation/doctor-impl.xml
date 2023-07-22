@@ -228,6 +228,7 @@ WHERE user_id = :doctor_id;]]></db:sql>
 	appointment_id : payload.appointment_id
 }]]]></db:input-parameters>
 		</db:query-single>
+		<logger level="INFO" doc:name="Logger" doc:id="8f31f87b-6471-4f7e-a92a-99344075c844" message="test tset #[vars.checkAppointmentStatus.appointment_status]"/>
 		<choice doc:name="Choice" doc:id="485c4a7e-8da1-438d-90a2-5dcc35052c45" >
 			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'not approved']">
 				<set-variable value="#[payload.appointment_id]" doc:name="Set appointment_id" doc:id="b2441772-da4e-4e73-b297-f0141c3b18e7" variableName="appointment_id"/>
@@ -285,8 +286,22 @@ output application/json
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="a81f8659-c40b-4320-8ca4-aa96038e802b" >
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'canceled']">
+				<ee:transform doc:name="appointment-canceled-message" doc:id="ffb64a27-dd80-4051-877e-5134668cbb65" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Appointment already canceled.'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'approved']">
+				<ee:transform doc:name="appointment-approved-message" doc:id="681d9347-cfd7-406c-9584-2a6d91fed07a" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -295,6 +310,20 @@ output application/json
 	"success"    : true,
 	"statusCode": 200,
 	'message': 'Your appointment already approved.'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="appointment-approved-message" doc:id="a81f8659-c40b-4320-8ca4-aa96038e802b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment already approved77.'
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<sub-flow name="post-add-appointment" doc:id="da2b97ad-3a3d-4612-997a-3a88b5f60f3a" >
 		<logger level="INFO" doc:name="start-book-appointment" doc:id="3c707845-d2cc-4465-99d6-a212b39ffe56" message="start-book-appointment"/>
 		<ee:transform doc:name="set-variable appointment_date" doc:id="5e26f72a-4cd9-43a5-97f4-e6a4cf758b61">
@@ -352,6 +353,7 @@ output application/json
 	</sub-flow>
 	<sub-flow name="cancel-appointment-by-users" doc:id="a34c6d55-350d-485b-84ef-d399d18be971" >
 		<logger level="INFO" doc:name="cancel-appointment-patient" doc:id="6d94715e-6703-438e-9209-ac18b40c1f6a" message="cancel-appointment"/>
+		<validation:is-number numberType="INTEGER" doc:name="appointment_id-should-be-number" doc:id="a9f3c568-a5df-4da3-986d-ebb4c0d42ec1" value="#[payload.appointment_id]" minValue="1" message="Appointment Id should be integer" config-ref="Validation_Config"/>
 		<db:query-single doc:name="check-appointment-status" doc:id="2ff32193-c0aa-4d2e-b3fd-a669534606e7" config-ref="Database_Config" target="checkAppointmentStatus">
 			<db:sql ><![CDATA[SELECT appointment_status FROM appointments WHERE appointment_id = :appointment_id]]></db:sql>
 			<db:parameter-types >
@@ -422,21 +424,34 @@ output application/json
 			</otherwise>
 		</choice>
 			</when>
-			<otherwise>
-				<logger level="INFO" doc:name="appointment already cancelled" doc:id="82a20992-5069-44cf-8549-ea61b9c4cadc" message="appointment already cancelled"/>
-				<ee:transform doc:name="Transform Message" doc:id="39430c1d-c1f9-4a32-8fc8-675e12f23990">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'canceled']">
+				<ee:transform doc:name="appointment-canceled-message" doc:id="e6805364-0377-49d9-9e0b-ceccb503c176" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	"success"    : true,
 	"statusCode": 200,
-	'message': 'Your appointment already cancelled.'
+	'message': 'Appointment already canceled.'
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-			</otherwise>
+			</when>
+			<when expression="#[vars.checkAppointmentStatus.appointment_status == 'approved']">
+				<ee:transform doc:name="appointment-approved-message" doc:id="afce6735-ed5d-41d7-9175-ddf2ec7847a6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success"    : true,
+	"statusCode": 200,
+	'message': 'Your appointment already approved.'
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
 		</choice>
 	</sub-flow>
 </mule>
