@@ -540,6 +540,6 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<google-calendar:create-calendars-events-by-calendar-id doc:name="Events insert" doc:id="78f0dca8-3534-42ac-a832-596a906af95b" config-ref="Google_Calendar_Connector_Config" calendarId="satish.kumar@bitsinglass.com"/>
+		<google-calendar:create-calendars-events-by-calendar-id doc:name="Events insert" doc:id="78f0dca8-3534-42ac-a832-596a906af95b" config-ref="Google_Calendar_Connector_Config" calendarId="${calendar.calendar_id}"/>
 	</sub-flow>
 </mule>
